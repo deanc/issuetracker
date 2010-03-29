@@ -22,7 +22,7 @@
 	echo $paginator->next(' Next »', null, null, array('class' => 'disabled'));
 ?> 
 <!-- prints X of Y, where X is current page and Y is number of pages -->
-<?php echo $paginator->counter(); ?>
+<?php //echo $paginator->counter(); ?>
 </p>
 
 	<table>
@@ -62,7 +62,7 @@ foreach($issues as $issue)
 	echo $paginator->next(' Next »', null, null, array('class' => 'disabled'));
 ?> 
 <!-- prints X of Y, where X is current page and Y is number of pages -->
-<?php echo $paginator->counter(); ?>
+<?php //echo $paginator->counter(); ?>
 </p>
 	<?php echo $this->Js->writeBuffer(); ?>
 <?php } else { ?>

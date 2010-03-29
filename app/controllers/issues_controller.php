@@ -48,6 +48,31 @@ class IssuesController extends AppController
 		$this->set('comments', $this->Comment->find('all', array('conditions' => "Comment.issue_id = $id", 'order' => 'Comment.created DESC')));
 	}
 	
+	function edit($id)
+	{
+		
+		$this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
+		
+		$issue = $this->Issue->findByissue_id($id);
+		if(empty($issue))
+		{
+			$this->redirect('/');
+		}
+
+		if(!empty($this->data))
+		{
+			if($this->Issue->validates($this->data))
+			{
+				$this->Issue->save($this->data);
+				$this->flash('This issue has been updated', '/issues/view/' . $this->Issue->id);
+			}
+		}
+		else
+		{
+			$this->data = $issue;
+		}
+	}
+	
 	function create()
 	{
 		if($this->Session->check('userinfo'))

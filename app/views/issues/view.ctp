@@ -1,5 +1,8 @@
 <h2><?php echo $issue['Issue']['title'] ?> (<?php echo $issue['IssueStatus']['status']; ?>)</h2>
-<p class="issue-info">Posted by: <?php echo $issue['User']['username'] ?> - Created: <?php echo $time->niceShort($issue['Issue']['created']) ?></p>
+<p class="issue-info">
+Posted by: <?php echo $issue['User']['username'] ?> 
+- Created: <?php echo $time->niceShort($issue['Issue']['created']) ?><span style="float: right;"><?php echo $html->link('Edit', '/issues/edit/' . $issue['Issue']['issue_id']); ?></span>
+</p>
 <p><?php echo nl2br($text->autoLink($issue['Issue']['content'])); ?></p>
 
 
