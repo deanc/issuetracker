@@ -1,0 +1,1 @@
+<div id="user-box"><?php echo $html->link('Login', '/users/login'); ?></div>

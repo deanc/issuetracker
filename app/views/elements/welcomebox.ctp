@@ -1,0 +1,1 @@
+<div id="user-box">Welcome back <?php echo $userinfo['User']['username'] . '<br />' . $html->link('Logout', '/users/logout'); ?></div>
