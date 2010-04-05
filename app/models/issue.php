@@ -40,6 +40,29 @@ class Issue extends AppModel
 		)				
 	); 	
 	
+	function getParticipants($id)
+	{
+		$emails = array();
+		
+		// author?
+		$issue = $this->findByissue_id($id);
+		$emails[] = $issue['User']['email'];
+		
+		// commenters
+		App::import('Model', 'Comment');
+		$comment = new Comment;
+		$commenters = $comment->find('all', array(
+			'conditions' => "Comment.issue_id = $id"
+			,'fields' => 'DISTINCT User.email'
+		));	
+		foreach($commenters as $key => $commenter)
+		{
+			$emails[] = $commenter['User']['email'];
+		}
+		
+		return array_unique($emails);		
+	}
+	
 }
 
 ?>

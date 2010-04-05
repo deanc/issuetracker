@@ -35,6 +35,10 @@
  */
 	Configure::write('debug', 2);
 
+	// app url
+	Configure::write('appurl', 'http://localhost/issues');
+	
+	
 /**
  * CakePHP Log Level:
  *

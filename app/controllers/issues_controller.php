@@ -3,7 +3,7 @@
 class IssuesController extends AppController
 {
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
-	var $components = array('RequestHandler');
+	var $components = array('RequestHandler', 'Notifier');
 	var $behaviours = array('Containable');
 	var $uses = array('Issue', 'Comment', 'User');
 	
@@ -65,6 +65,34 @@ class IssuesController extends AppController
 			{
 				$this->Issue->save($this->data);
 				$this->flash('This issue has been updated', '/issues/view/' . $this->Issue->id);
+				
+				// ##### if status has changed, let participants know about it #####
+				if($this->data['Issue']['status_id'] != $issue['Issue']['status_id'])
+				{
+					$userinfo = $this->Session->read('userinfo');
+					$emails = $this->Issue->getParticipants($id);
+		
+					if($this->data['Issue']['issue_id'] == $issue['Issue']['user_id'])
+					{
+						foreach($emails AS $key => $email)
+						{
+							if($email == $issue['User']['email'])
+							{
+								unset($emails["$key"]);
+							}
+						}
+					}
+					
+		
+					foreach($emails AS $email)
+					{
+						$this->Notifier->addRecipient(null, $email);
+					}
+					$this->Notifier->send('Status changed on Issue #' . $id, 'issuestatuschanged', array(
+						'username' => $userinfo['User']['username']
+						,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
+					));				
+				}
 			}
 		}
 		else
@@ -85,6 +113,11 @@ class IssuesController extends AppController
 				if($this->Issue->validates($this->data))
 				{
 					$this->Issue->save($this->data);
+					
+					// notify the assignee
+					
+					
+					
 					$this->flash('This issue has been created', '/issues/view/' . $this->Issue->id);
 				}
 			}
@@ -110,6 +143,31 @@ class IssuesController extends AppController
 					)
 				)
 			);
+			
+			// ##### notifications for people active on the issue #####
+			$emails = $this->Issue->getParticipants($id);
+
+			$issue = $this->Issue->findByissue_id($id);
+			if($user_id = $issue['Issue']['user_id'])
+			{
+				foreach($emails AS $key => $email)
+				{
+					if($email == $issue['User']['email'])
+					{
+						unset($emails["$key"]);
+					}
+				}
+			}
+			
+
+			foreach($emails AS $email)
+			{
+				$this->Notifier->addRecipient(null, $email);
+			}
+			$this->Notifier->send('New comment on Issue #' . $id, 'newcomment', array(
+				'username' => $userinfo['User']['username']
+				,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
+			));
 			
 			// update comment count
 			$this->Issue->id = $id;
