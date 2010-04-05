@@ -7,7 +7,7 @@ $config['Notifications'] = array(
 		,'host' => ''
 		,'username' => ''
 		,'password' => ''
-		,client' => 'smtp_helo_hostname'
+		,'client' => 'smtp_helo_hostname'
 	)
 );
 
