@@ -3,7 +3,7 @@
 Posted by: <?php echo $issue['User']['username'] ?> 
 - Created: <?php echo $time->niceShort($issue['Issue']['created']) ?><span style="float: right;"><?php echo $html->link('Edit', '/issues/edit/' . $issue['Issue']['issue_id']); ?></span>
 </p>
-<p><?php echo nl2br($text->autoLink($issue['Issue']['content'])); ?></p>
+<p><?php echo $text->autoLink(nl2br($issue['Issue']['content'])); ?></p>
 
 
 <div id="issue-comments">
