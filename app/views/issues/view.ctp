@@ -13,11 +13,15 @@ Posted by: <?php echo $issue['User']['username'] ?>
 	if($is_logged_in)
 	{
 	?>
+        <fieldset>
 		<form action="<?php echo $html->url('/issues/comment/' . $issue['Issue']['issue_id'] . '/') ?>" method="post" id="comments">
 			<strong>Make a comment</strong><br />
 			<textarea name="data[Comment][content]" rows="5" cols="60"></textarea><br />
+
+            <?php echo $form->input('Issue.status_id', array('empty' => 'Select a status', 'options' => $statuses, 'div' => false, 'label' => 'Change status to:')); ?>
 			<?php echo $form->submit('Post Comment'); ?>
 		</form>
+        </fieldset>
 	<?php
 	}
 

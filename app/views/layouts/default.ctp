@@ -56,16 +56,23 @@
 				}
 				
 				?>
-				<p><?php echo '<input type="submit" name="create" value="Create Issue" onclick="window.location=\'' . $html->url('/issues/create') . '\'" />'; ?>
+                <?php
+                if(isset($_statuses) AND isset($project))
+                {
+                ?>
+				<p><?php echo '<input type="submit" name="create" value="Create Issue" onclick="window.location=\'' . $html->url('/issues/create/' . $project['Project']['project_id']) . '\'" />'; ?>
 				<ul id="issue-status-list">
 					<?php
 						echo '<li>' . $html->link('All', '/issues') . '</li>';
 						foreach($_statuses AS $status)
 						{
-							echo '<li>' . $html->link($status['IssueStatus']['status'] . ' (' . $status['sq']['total'] . ')', '/issues/status/' . strtolower($status['IssueStatus']['status'])) . '</li>';
+							echo '<li>' . $html->link($status['IssueStatus']['status'] . ' (' . ($status['sq']['total'] != null ? $status['sq']['total'] : 0) . ')', '/projects/' . $project['Project']['project_id'] . '/issues/' . urlencode(strtolower($status['IssueStatus']['status']))) . '</li>';
 						}
 					?>
 				</ul>
+                <?php
+                }
+                ?>
 			</div>
 
 			<div id="center">

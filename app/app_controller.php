@@ -2,30 +2,11 @@
 class AppController extends Controller 
 {
 	var $cookieKey = 'adsfadsf1231232asxdfjkljlkjjk';
-	var $uses = array('IssueStatus');
+	var $uses = array('IssueStatus', 'User');
 	var $components = array('Cookie', 'Session');
 	
 	function beforeFilter()
 	{
-		
-//		$statuses = Cache::read('statuses');
-//		debug($statuses);
-//		if(sizeof($statuses) == 0 OR 1==1)
-//		{
-		$statuses = $this->IssueStatus->query("
-			SELECT
-				IssueStatus.*
-				,sq.total
-			FROM
-				issue_status as IssueStatus
-			LEFT JOIN
-				(
-					SELECT COUNT(*) AS total, status_id FROM issue GROUP BY status_id
-				) as sq ON (sq.status_id = IssueStatus.status_id)
-		");
-//			Cache::write('statuses', $statuses);
-//		}
-		$this->set('_statuses', $statuses);
 		$logged_in = $this->isLoggedIn();
 		//debug(var_export($logged_in, true));
 		$this->set('is_logged_in', $logged_in);

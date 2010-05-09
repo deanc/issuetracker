@@ -14,30 +14,13 @@ class IssuesController extends AppController
 	
 	function status($status = null)
 	{
-		$this->paginate = array(
-			'contain' => array('User', 'IssueStatus')
-			, 'limit' => 20
-			,'order' => 'Issue.updated DESC'
-		);		
-		
-		// look for url params
-		$status_id = $this->IssueStatus->findBystatus($status);
-
-		if($status_id > 0)
-		{
-			$this->set('status', $status_id['IssueStatus']['status']);
-			$status_id = $status_id['IssueStatus']['status_id'];
-			$this->paginate = array_merge($this->paginate, array('conditions' => array("Issue.status_id = $status_id")));		
-		}
 	
-    	$issues = $this->paginate();
-    	
-    	$this->set(compact('issues'));		
 	}
 	
 	function view($id)
 	{
 		$issue = $this->Issue->findByissue_id($id);
+
 		if(empty($issue))
 		{
 			$this->redirect('/');
@@ -46,6 +29,9 @@ class IssuesController extends AppController
 		
 		// comments
 		$this->set('comments', $this->Comment->find('all', array('conditions' => "Comment.issue_id = $id", 'order' => 'Comment.created DESC')));
+
+        // statuses for comment form
+        $this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
 	}
 	
 	function edit($id)
@@ -101,13 +87,14 @@ class IssuesController extends AppController
 		}
 	}
 	
-	function create()
+	function create($project_id)
 	{
 		if($this->Session->check('userinfo'))
 		{
 			$userinfo = $this->Session->read('userinfo');
 			$this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
 			$this->set('user_id', $userinfo['User']['user_id']);
+            $this->set('project_id', (int)$project_id);
 			if(!empty($this->data))
 			{
 				if($this->Issue->validates($this->data))
@@ -143,6 +130,14 @@ class IssuesController extends AppController
 					)
 				)
 			);
+
+            if($this->data['Issue']['status_id'] > 0)
+            {
+                $this->Issue->id = $id;
+                $this->Issue->save(
+                    array('Issue' => array('status_id' => $this->data['Issue']['status_id']))
+                );
+            }
 			
 			// ##### notifications for people active on the issue #####
 			$emails = $this->Issue->getParticipants($id);
