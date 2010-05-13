@@ -47,11 +47,26 @@ class ProjectsController extends AppController
         )));
        $this->Project->recursive = 0;
 
-
-		$this->set('projects', $this->Project->find('all', array(
+        $projects = $this->Project->find('all', array(
                 'fields' => array('Project.*'),
                 'conditions'=>$conditions
-        ))); 
+        ));
+
+        $ids = array();
+        foreach($projects AS $key => $project)
+        {
+            if(in_array($project['Project']['project_id'], $ids))
+            {
+                unset($projects["$key"]);
+            }
+            else
+            {
+                $ids[] = $project['Project']['project_id'];
+            }
+        }
+
+
+		$this->set('projects', $projects);
 	}
 
     function issues($project_id, $status = 0)
