@@ -147,14 +147,13 @@ class IssuesController extends AppController
 			{
 				foreach($emails AS $key => $email)
 				{
-					if($email == $issue['User']['email'])
+					if($email == $userinfo['User']['email'])
 					{
 						unset($emails["$key"]);
 					}
 				}
 			}
 			
-
 			foreach($emails AS $email)
 			{
 				$this->Notifier->addRecipient(null, $email);
