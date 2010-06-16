@@ -63,7 +63,7 @@
 				<p><?php echo '<input type="submit" name="create" value="Create Issue" onclick="window.location=\'' . $html->url('/issues/create/' . $project['Project']['project_id']) . '\'" />'; ?>
 				<ul id="issue-status-list">
 					<?php
-						echo '<li>' . $html->link('All', '/issues') . '</li>';
+						echo '<li>' . $html->link('All', '/projects/' . $project['Project']['project_id'] . '/issues') . '</li>';
 						foreach($_statuses AS $status)
 						{
 							echo '<li>' . $html->link($status['IssueStatus']['status'] . ' (' . ($status['sq']['total'] != null ? $status['sq']['total'] : 0) . ')', '/projects/' . $project['Project']['project_id'] . '/issues/' . urlencode(strtolower($status['IssueStatus']['status']))) . '</li>';
