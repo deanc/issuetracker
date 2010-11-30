@@ -1,6 +1,6 @@
 <h2>Projects</h2>
 
-<ul>
+<ul class="projects">
 <?php
 
 foreach($projects AS $project)
