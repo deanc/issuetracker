@@ -1,4 +1,4 @@
-<h2>Viewing all issues</h2>
+<h2>Viewing all issues for "<?php echo $project['Project']['name']; ?>" (<?php echo sizeof($issues); ?>)</h2>
 
 
 
@@ -6,10 +6,10 @@
 
 		$this->Paginator->options(array(
 		    'update' => '#center',
-		    'evalScripts' => true
+		    'evalScripts' => true			
 		));
-
-	if(sizeof($issues) > 0) {
+		
+		if(sizeof($issues) > 0) {
 	
 ?>
 
@@ -31,6 +31,7 @@
 		<th><?php echo $paginator->sort('Title', 'title'); ?></th> 
 		<th><?php echo $paginator->sort('Author', 'User.username'); ?></th> 
 		<th><?php echo $paginator->sort('Status', 'IssueStatus.status'); ?></th>
+		<th><?php echo $paginator->sort('Priority', 'IssuePriority.priority'); ?></th>
 		<th><?php echo $paginator->sort('Comments', 'Issue.comments'); ?></th>
 		<th><?php echo $paginator->sort('Last Updated', 'updated'); ?></th>	 
 	</tr>
@@ -44,8 +45,9 @@ foreach($issues as $issue)
 	echo '<td>' . $html->link($issue['Issue']['title'], '/projects/' . $issue['Issue']['project_id'] . '/issue/' . $issue['Issue']['issue_id']) . '</td>';
 	echo '<td>' . $issue['User']['username'] . '</td>';
 	echo '<td>' . $issue['IssueStatus']['status'] . '</td>';
+	echo '<td>' . $this->element('priorityhighlight', array('hex' => $issue['IssuePriority']['hex'], 'priority' => $issue['IssuePriority']['priority'])) . '</td>';
 	echo '<td>' . $issue['Issue']['comments'] . '</td>';
-	echo '<td>' . $issue['Issue']['updated'] . '</td>';
+	echo '<td>' . $time->niceShort($issue['Issue']['updated']) . '</td>';
 	echo '</td>';
 }
 		?>
@@ -66,5 +68,5 @@ foreach($issues as $issue)
 </p>
 	<?php echo $this->Js->writeBuffer(); ?>
 <?php } else { ?>
-	<p>There are no issues with a status of '<?php echo $status; ?>'</p>
+	<p>There are no issues here</p>
 <?php } ?>
