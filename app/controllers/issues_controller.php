@@ -5,8 +5,13 @@ class IssuesController extends AppController
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
 	var $components = array('RequestHandler', 'Notifier');
 	var $behaviours = array('Containable');
-	var $uses = array('Issue', 'Comment', 'User');
+	var $uses = array('Issue', 'Comment', 'User', 'IssueUser', 'Project');
 	
+	function beforeFilter()
+	{
+		parent::beforeFilter();
+	}
+
 	function index()
 	{
 		$this->redirect('/');
@@ -30,16 +35,29 @@ class IssuesController extends AppController
 		// comments
 		$this->set('comments', $this->Comment->find('all', array('conditions' => "Comment.issue_id = $id", 'order' => 'Comment.created DESC')));
 
-        // statuses for comment form
-        $this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
+        	// statuses for comment form
+	        $this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
+	
+		// priorities for comment form
+		$this->set('priorities', $this->Issue->IssuePriority->find('list', array('fields' => array('IssuePriority.priority'))));
 	}
 	
 	function edit($id)
 	{
 		
 		$this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
-		
+		$this->set('priorities', $this->Issue->IssuePriority->find('list', array('fields' => array('IssuePriority.priority'))));
+
 		$issue = $this->Issue->findByissue_id($id);
+		
+		$users = array();
+		foreach($issue['Users'] AS $user)
+		{
+			$users[$user['user_id']] = $user['username'];
+		}
+		$this->set('project_users', $users);
+		$this->set('_project_id', $issue['Issue']['project_id']);
+		//debug($issue['Issue']['project_id']);
 		if(empty($issue))
 		{
 			$this->redirect('/');
@@ -47,10 +65,13 @@ class IssuesController extends AppController
 
 		if(!empty($this->data))
 		{
+
 			if($this->Issue->validates($this->data))
 			{
 				$this->Issue->save($this->data);
 				$this->flash('This issue has been updated', '/issues/view/' . $this->Issue->id);
+			
+				$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
 				
 				// ##### if status has changed, let participants know about it #####
 				if($this->data['Issue']['status_id'] != $issue['Issue']['status_id'])
@@ -89,10 +110,13 @@ class IssuesController extends AppController
 	
 	function create($project_id)
 	{
+		$this->set('_project_id', $project_id);
+
 		if($this->Session->check('userinfo'))
 		{
 			$userinfo = $this->Session->read('userinfo');
 			$this->set('statuses', $this->Issue->IssueStatus->find('list' ,array('fields' => array('IssueStatus.status'))));
+			$this->set('priorities', $this->Issue->IssuePriority->find('list', array('fields' => array('IssuePriority.priority'))));
 			$this->set('user_id', $userinfo['User']['user_id']);
             $this->set('project_id', (int)$project_id);
 			if(!empty($this->data))
@@ -101,6 +125,8 @@ class IssuesController extends AppController
 				{
 					$this->Issue->save($this->data);
 					
+					$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
+
 					// notify the assignee
 					
 					
@@ -138,6 +164,14 @@ class IssuesController extends AppController
                     array('Issue' => array('status_id' => $this->data['Issue']['status_id']))
                 );
             }
+
+		if($this->data['Issue']['priority_id'] > 0)
+		{
+			$this->Issue->id = $id;
+			$this->Issue->save(
+				array('Issue' => array('priority_id' => $this->data['Issue']['priority_id']))
+			);
+		}
 			
 			// ##### notifications for people active on the issue #####
 			$emails = $this->Issue->getParticipants($id);
@@ -174,7 +208,52 @@ class IssuesController extends AppController
 		{
 			$this->redirect('/issues/view/' . $id);
 		}
+	}
+
+	function delete($id)
+	{
+		$issue = $this->Issue->findByissue_id($id);
+		if(!empty($issue))
+		{
+			if(!empty($this->data))
+			{
+				$this->Issue->delete($this->data['Issue']['issue_id']);
+				$this->flash('This issue has been deleted', '/projects/'. $this->data['Issue']['project_id'] . '/issues');
+			}
+			else
+			{
+				$this->data = $issue;
+			}
+		}
+		else
+		{
+			$this->flash('Invalid issue', '/issues/view/' . $id);
+		}
 	}	
+
+	function search()
+	{
+         //$this->set('project', $this->Project->findByproject_id($project_id));
+  
+            $this->paginate = array(
+                 'contain' => array('User', 'IssueStatus', 'IssuePriority')
+	              , 'limit' => 20
+	               ,'order' => 'Issue.updated DESC'
+	            );
+	    
+		    // look for url params
+		    $conditions = array(
+				'OR' => array(
+					'Issue.title LIKE ' => '%' . $this->params['url']['keywords'] . '%'
+					,'Issue.content LIKE ' => '%' . $this->params['url']['keywords'] . '%'
+				)
+			);
+		    $this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
+				
+				
+		    $issues = $this->paginate('Issue');
+		    $this->set(compact('issues'));
+	}
 }
 
 ?>
