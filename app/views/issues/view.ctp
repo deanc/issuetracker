@@ -1,8 +1,9 @@
-<h2><?php echo $issue['Issue']['title'] ?> (<?php echo $issue['IssueStatus']['status']; ?>)</h2>
+<h2><?php echo $issue['Issue']['title'] ?> (<?php echo $issue['IssueStatus']['status'] . ' - ' . $issue['IssuePriority']['priority']; ?>)</h2>
 <p class="issue-info">
 Posted by: <?php echo $issue['User']['username'] ?> 
-- Created: <?php echo $time->niceShort($issue['Issue']['created']) ?><span style="float: right;"><?php echo $html->link('Edit', '/issues/edit/' . $issue['Issue']['issue_id']); ?></span>
+- Created: <?php echo $time->niceShort($issue['Issue']['created']) ?><span style="float: right;"><?php echo $html->link('Edit', '/issues/edit/' . $issue['Issue']['issue_id']) . ' | ' . $html->link('Delete', '/issues/delete/' . $issue['Issue']['issue_id']); ?></span><br />
 </p>
+
 <p><?php echo $text->autoLink(nl2br($issue['Issue']['content'])); ?></p>
 
 
