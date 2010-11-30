@@ -13,6 +13,7 @@ class Issue extends AppModel
 	  ,'content' => array('type' => 'text')
 	  ,'status_id' => array('type' => 'integer')
 	  ,'user_id' => array('type' => 'integer')
+	  ,'priority_id' => array('type' => 'integer')
 	);	
 	
 	var $hasAndBelongsToMany = array(
@@ -21,12 +22,31 @@ class Issue extends AppModel
 			, 'foreignKey' => 'issue_id'
 			,'associationForeignKey'  => 'tag_id'
 			,'joinTable' => 'issue_tag'
-		)
-	); 
-	
+		),
+	 
+       		 'Users' =>
+                array(
+                    'className'              => 'User',
+                    'joinTable'              => 'issue_user',
+                    'foreignKey'             => 'issue_id',
+                    'associationForeignKey'  => 'user_id',
+                    'unique'                 => true,
+                    'conditions'             => '',
+                    'fields'                 => '',
+                    'order'                  => '',
+                    'limit'                  => '',
+                    'offset'                 => '',
+                    'finderQuery'            => '',
+                    'deleteQuery'            => '',
+                    'insertQuery'            => '',
+		   // 'with'		     => 'IssueUser'
+                )
+        );
+
 	var $belongsTo = array(
 		'User' => array('foreignKey' => 'user_id')
 		,'IssueStatus' => array('foreignKey' => 'status_id')
+		,'IssuePriority' => array('foreignKey' => 'priority_id')
 	);
 
 	var $validate = array(
@@ -61,6 +81,31 @@ class Issue extends AppModel
 		}
 		
 		return array_unique($emails);		
+	}
+
+	function updateUsers($issueID, $users)
+	{
+		App::import('model', 'IssueUser');
+		$issueuser = new IssueUser;
+		$issue = $this->findByissue_id($issueID);
+	        if(isset($users) AND sizeof($users) > 0)
+                {
+                	$issueuser->del(array(
+                        	'conditions' => array(
+                                	'issue_id' => $issueID
+                              )
+                        ));
+ 
+                        foreach($users AS $userid)
+                        {
+                        	$issueuser->save(array(
+                                	'IssueUser' => array(
+                                        	'issue_id' => $issueID
+                                                ,'user_id' => $userid
+                                        )
+                                ));
+                        }
+                }
 	}
 	
 }
