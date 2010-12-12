@@ -34,46 +34,70 @@
 	?>
 </head>
 <body>
+	
+	<div id="topbar"><div id="topbar-container">
+		<ul id="topnav">
+			<li><?php echo $this->Html->link('Home', '/'); ?></li>
+			<!-- <li><?php echo $this->Html->link('Projects', '/'); ?></li> -->
+			<?php
+			if(isset($_statuses) AND isset($project))
+			{
+				echo '<li>' . $this->Html->link('Create Issue', '/issues/create/' . $project['Project']['project_id']). '</li>';
+			}
+			?>
+		</ul>
+		<?php
+		if($is_logged_in)
+		{
+			echo $this->element('welcomebox', array('userinfo' => $userinfo));
+		}
+		else
+		{
+			echo $this->element('loginbox');
+		}
+		?>
+	</div></div>
+
 	<div id="container">
-		<div id="header">
-			<h1><?php echo $this->Html->link(__('Issue Tracker', true), '/'); ?></h1>
-		</div>
 
 		<div id="content">
 
+<?php echo $this->element('searchbox'); ?>
+
 			<?php echo $this->Session->flash(); ?>
 
+			<!--
+
 			<div id="left">
-				<?php
-				
-				if($is_logged_in)
-				{
-					echo $this->element('welcomebox', array('userinfo' => $userinfo));
-				}
-				else
-				{
-					echo $this->element('loginbox');
-				}
-				
-				?>
                 <?php
                 if(isset($_statuses) AND isset($project))
                 {
+			
                 ?>
 				<p><?php echo '<input type="submit" name="create" value="Create Issue" onclick="window.location=\'' . $html->url('/issues/create/' . $project['Project']['project_id']) . '\'" />'; ?>
 				<ul id="issue-status-list">
-					<?php
+					<?php /*
 						echo '<li>' . $html->link('All', '/projects/' . $project['Project']['project_id'] . '/issues') . '</li>';
 						foreach($_statuses AS $status)
 						{
 							echo '<li>' . $html->link($status['IssueStatus']['status'] . ' (' . ($status['sq']['total'] != null ? $status['sq']['total'] : 0) . ')', '/projects/' . $project['Project']['project_id'] . '/issues/' . urlencode(strtolower($status['IssueStatus']['status']))) . '</li>';
 						}
+					*/
 					?>
 				</ul>
                 <?php
-                }
-                ?>
+
+		echo '<p><strong>Filter:</strong></p>';
+		echo $form->create(null, array('type' => 'get', 'url' => '/projects/' . $project['Project']['project_id'] . '/issues'));
+		echo '<div class="input select">'.$form->select('status_id', $_statuses2, 0, array('empty' => 'By type...')) . '</div>';
+		echo '<div class="input select">'.$form->select('priority_id', $priorities, null, array('empty' => 'By priority...')) . '</div>';
+		echo $form->end('Filter');
+
+              }  
+		?>
 			</div>
+
+			-->
 
 			<div id="center">
 				<?php echo $content_for_layout; ?>
@@ -81,7 +105,11 @@
 
 		</div>
 		<div id="footer">
-			
+			<?php
+			if(isset($_project_id)) { 
+				 echo '<span style="display: none" id="ajax-project-id">' . $_project_id . '</span>';
+			}
+			?>
 		</div>
 	</div>
 	<?php echo $this->element('sql_dump'); ?>

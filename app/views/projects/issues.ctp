@@ -41,13 +41,15 @@
 		<?php
 foreach($issues as $issue)		
 {
-	echo '<tr>';
-	echo '<td>' . $html->link($issue['Issue']['title'], '/projects/' . $issue['Issue']['project_id'] . '/issue/' . $issue['Issue']['issue_id']) . '</td>';
-	echo '<td>' . $issue['User']['username'] . '</td>';
-	echo '<td>' . $issue['IssueStatus']['status'] . '</td>';
-	echo '<td>' . $this->element('priorityhighlight', array('hex' => $issue['IssuePriority']['hex'], 'priority' => $issue['IssuePriority']['priority'])) . '</td>';
-	echo '<td>' . $issue['Issue']['comments'] . '</td>';
-	echo '<td>' . $time->niceShort($issue['Issue']['updated']) . '</td>';
+	$new = $this->element('isnew', array('issue' => $issue['Issue'], 'lastvisit' => $lastvisit, 'viewed' => $viewed));
+
+	echo '<tr class="' . strtolower($issue['IssueStatus']['status']) . '">';
+	echo '<td class="title">' . $html->link($issue['Issue']['title'], '/projects/' . $issue['Issue']['project_id'] . '/issue/' . $issue['Issue']['issue_id']) . $new . '</td>';
+	echo '<td class="user">' . $issue['User']['username'] . '</td>';
+	echo '<td class="status">' . $issue['IssueStatus']['status'] . '</td>';
+	echo '<td class="priority">' . $this->element('priorityhighlight', array('hex' => $issue['IssuePriority']['hex'], 'priority' => $issue['IssuePriority']['priority'])) . '</td>';
+	echo '<td class="comments">' . $issue['Issue']['comments'] . '</td>';
+	echo '<td class="updated">' . $time->niceShort($issue['Issue']['updated']) . '</td>';
 	echo '</td>';
 }
 		?>

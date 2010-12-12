@@ -13,7 +13,16 @@ class AppController extends Controller
 		if($logged_in)
 		{
 			$this->set('userinfo', $this->Session->read('userinfo'));
+			$this->User->id = $this->Cookie->read('user_id');
+			$this->User->saveField('lastactivity', date('Y-m-d H:i:s'));
+
+			if(!$this->Session->check('viewed'))
+			{
+				$this->Session->write('viewed', serialize(array()));
+			}
 		}
+
+		//debug($this->Session->read('viewed'));
 	}
 
 	public function isLoggedIn()

@@ -22,6 +22,9 @@ class UsersController extends AppController
 					$this->Cookie->write('user_id', $userid, false);
 					$this->Cookie->write('hash', $this->generateHash($userid), false);
 					$this->getUserInfo($userid);					
+					
+					$this->Session->write('lastvisit', $user['User']['lastactivity']);
+					
 					$this->flash('You have been successfully logged in', '/', 5);
 				}
 			}

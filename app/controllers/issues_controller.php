@@ -3,7 +3,7 @@
 class IssuesController extends AppController
 {
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
-	var $components = array('RequestHandler', 'Notifier');
+	var $components = array('RequestHandler', 'Notifier', 'Session');
 	var $behaviours = array('Containable');
 	var $uses = array('Issue', 'Comment', 'User', 'IssueUser', 'Project');
 	
@@ -32,6 +32,22 @@ class IssuesController extends AppController
 		}
 		$this->set('issue', $issue);
 		
+		if($this->Session->check('viewed'))
+		{
+			$viewed = unserialize($this->Session->read('viewed'));
+			if(!in_array($id, array_keys($viewed))) 
+			{
+				$viewed += array($id => date("Y-m-d H:i:s"));
+				$this->Session->write('viewed', serialize($viewed));
+			}
+			else
+			{
+				$viewed[$id] = date("Y-m-d H:i:s");
+				$this->Session->write('viewed', serialize($viewed));
+			}
+		}
+
+
 		// comments
 		$this->set('comments', $this->Comment->find('all', array('conditions' => "Comment.issue_id = $id", 'order' => 'Comment.created DESC')));
 
@@ -71,7 +87,10 @@ class IssuesController extends AppController
 				$this->Issue->save($this->data);
 				$this->flash('This issue has been updated', '/issues/view/' . $this->Issue->id);
 			
-				$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
+				if(isset($this->data['Users']))
+				{
+					$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
+				}
 				
 				// ##### if status has changed, let participants know about it #####
 				if($this->data['Issue']['status_id'] != $issue['Issue']['status_id'])
@@ -165,7 +184,7 @@ class IssuesController extends AppController
                 );
             }
 
-		if($this->data['Issue']['priority_id'] > 0)
+		if(isset($this->data['Issue']['priority_id']) AND $this->data['Issue']['priority_id'] > 0)
 		{
 			$this->Issue->id = $id;
 			$this->Issue->save(

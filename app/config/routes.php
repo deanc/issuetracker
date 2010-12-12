@@ -41,6 +41,15 @@ Router::connect(
         )
     );
 
+	Router::connect(
+		'/projects/:id/users'
+		,array('controller' => 'projects', 'action' => 'users')
+		, array(
+			'pass' => array('id')
+			,'id' => '[0-9]+'
+		)
+	);
+
     Router::connect(
         '/projects/:id/issues/:status',
         array('controller' => 'projects', 'action' => 'issues', 'status' => null),

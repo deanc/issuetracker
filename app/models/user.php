@@ -7,7 +7,9 @@ class User extends AppModel
 
 	function beforeSave()
 	{
-		$this->data['User']['password'] = md5($this->data['User']['password']);		
+		if(isset($this->data['User']['password'])) {
+			$this->data['User']['password'] = md5($this->data['User']['password']);		
+		}
 		return true;
 	}
 	

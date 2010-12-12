@@ -4,7 +4,7 @@ class ProjectsController extends AppController
 {
     var $uses = array('Project', 'Issue', 'User', 'IssuePriority', 'ProjectUser');
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
-	var $components = array('RequestHandler');
+	var $components = array('RequestHandler', 'Session');
 
     function beforeFilter()
     {
@@ -65,6 +65,8 @@ class ProjectsController extends AppController
         $ids = array();
         foreach($projects AS $key => $project)
         {
+			$count = $this->Issue->find('count', array('conditions' => array('Issue.project_id' => $project['Project']['project_id'])));
+			$projects["$key"]['Project']['total_issues'] = $count;
             if(in_array($project['Project']['project_id'], $ids))
             {
                 unset($projects["$key"]);
@@ -74,8 +76,8 @@ class ProjectsController extends AppController
                 $ids[] = $project['Project']['project_id'];
             }
         }
-
-
+		$this->set('user', $this->User->findByuser_id($userinfo['User']['user_id']));
+		$this->set('viewed', $this->Session->read('viewed'));
 		$this->set('projects', $projects);
 	}
 
@@ -120,6 +122,8 @@ class ProjectsController extends AppController
     	$issues = $this->paginate('Issue');
 
     	$this->set(compact('issues'));
+		$this->set('viewed', unserialize($this->Session->read('viewed')));
+		$this->set('lastvisit', $this->Session->read('lastvisit'));
     }
 
     function users($project_id, $issue_id = 0)

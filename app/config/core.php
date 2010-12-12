@@ -36,7 +36,7 @@
 	Configure::write('debug', 2);
 
 	// app url
-	Configure::write('appurl', 'http://localhost/issues');
+	Configure::write('appurl', 'http://people.mywot.com/issuetracker/');
 	
 	
 /**
@@ -243,7 +243,7 @@
  * If you are on PHP 5.3 uncomment this line and correct your server timezone
  * to fix the date & time related errors.
  */
-	//date_default_timezone_set('UTC');
+	date_default_timezone_set('Europe/Helsinki');
 
 /**
  *

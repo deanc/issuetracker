@@ -107,6 +107,18 @@ class Issue extends AppModel
                         }
                 }
 	}
+
+	function afterSave($created)
+	{
+		$issue = $this->findByissue_id($this->id);	
+		if(isset($issue['Issue']['project_id']))
+		{
+			App::import('model', 'Project');
+			$project = new Project;
+			$project->id = $issue['Issue']['project_id'];
+			$project->saveField('lastactivity', date("Y-m-d H:i:s"));
+		}
+	}
 	
 }
 
