@@ -1,4 +1,7 @@
-/app/config
+#/app/config
+/app/config/database.php
+/app/config/notifications.php
+/app/config/core.php
 /app/tmp
 /plugins
 /vendors
