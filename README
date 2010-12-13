@@ -2,3 +2,5 @@ Install instructions:
 
 1) Rename app/config/database.default.php to database.php and change the configuration details to point to your database.
 2) Rename app/config/core.php.default to core.php and alter configuration values to suit your needs
+
+
