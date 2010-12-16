@@ -109,12 +109,12 @@ class IssuesController extends AppController
 						}
 					}
 					
-		
+					$status = $this->IssueStatus->findBystatus_id($this->data['Issue']['status_id']);
 					foreach($emails AS $email)
 					{
 						$this->Notifier->addRecipient(null, $email);
 					}
-					$this->Notifier->send('Status changed on Issue #' . $id, 'issuestatuschanged', array(
+					$this->Notifier->send('[Status:' . $status['IssueStatus']['status'] . '] ' . $this->data['Issue']['title'], 'issuestatuschanged', array(
 						'username' => $userinfo['User']['username']
 						,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
 					));				
@@ -211,7 +211,7 @@ class IssuesController extends AppController
 			{
 				$this->Notifier->addRecipient(null, $email);
 			}
-			$this->Notifier->send('New comment on Issue #' . $id, 'newcomment', array(
+			$this->Notifier->send('[New:comment] ' . $issue['Issue']['title'], 'newcomment', array(
 				'username' => $userinfo['User']['username']
 				,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
 			));
