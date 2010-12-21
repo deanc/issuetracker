@@ -145,6 +145,11 @@ class ProjectsController extends AppController
 		echo json_encode($json);
 		die;
 	}
+
+	function admin_index()
+	{
+		$this->set('projects', $this->Project->find('all'));
+	}
 }
 
 ?>

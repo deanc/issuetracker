@@ -61,8 +61,16 @@
 	<div id="container">
 
 		<div id="content">
-
-<?php echo $this->element('searchbox'); ?>
+			<div id="breadcrumb-nav">
+				<ul id="breadcrumb">
+					<li><a href="#">Home</a></li>
+					<li><a href="#">Ignore</a></li>
+					<li><a href="#">This</a></li>
+					<li><a href="#">For</a></li>
+					<li><a href="#">Now</a></li>
+				</ul>
+				<?php echo $this->element('searchbox'); ?>
+			</div>
 
 			<?php echo $this->Session->flash(); ?>
 

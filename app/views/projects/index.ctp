@@ -11,7 +11,7 @@ foreach($projects AS $project)
 		$new = '<span class="new">New!</span>';
 	}
 
-    echo '<li><span style="float: right">(' . $project['Project']['total_issues'] . ')</span> ' . $html->link($project['Project']['name'], '/projects/' . $project['Project']['project_id'] . '/issues') . $new . '</li>';
+    echo '<li><span style="float: right">(' . $project['Project']['total_issues'] . ')</span> ' . $html->link($project['Project']['name'] . $new, '/projects/' . $project['Project']['project_id'] . '/issues', array('escape' => false)) .  '</li>';
 }
 ?>
 </ul>

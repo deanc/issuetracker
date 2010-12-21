@@ -9,12 +9,18 @@ class IssuesController extends AppController
 	
 	function beforeFilter()
 	{
+		parent::beforefilter();
+
 		if(in_array($this->action, array('search')))
 		{
 			$this->set('savedSearches', $this->SavedSearch->listAll(1));
 		}
 
-		parent::beforeFilter();
+		// logged in actions
+		if(in_array($this->action, array('edit','comment','delete')) AND $this->loggedIn === false)
+		{
+			$this->redirect('/');
+		}
 	}
 
 	function index()
