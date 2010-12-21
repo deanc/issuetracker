@@ -611,3 +611,7 @@ ul.projects li a:hover { color: #000; }
 .new { color: #ff0000; font-size: 10px; padding-left: 10px;}
 
 tr.closed td.title a { color: #bbb; }
+
+#leftcol { margin-top: 30px; float: left; width: 620px; border-right: 1px dotted #eee; padding-right: 20px; }
+#rightcol { margin-top: 30px; float: right; width: 200px; }
+#rightcol .block { margin-bottom: 30px; }

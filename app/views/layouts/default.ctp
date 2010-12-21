@@ -40,7 +40,7 @@
 			<li><?php echo $this->Html->link('Home', '/'); ?></li>
 			<!-- <li><?php echo $this->Html->link('Projects', '/'); ?></li> -->
 			<?php
-			if(isset($_statuses) AND isset($project))
+			if(isset($project))
 			{
 				echo '<li>' . $this->Html->link('Create Issue', '/issues/create/' . $project['Project']['project_id']). '</li>';
 			}
