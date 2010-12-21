@@ -4,7 +4,8 @@ class AppController extends Controller
 	var $cookieKey = 'adsfadsf1231232asxdfjkljlkjjk';
 	var $uses = array('IssueStatus', 'User');
 	var $components = array('Cookie', 'Session');
-	
+	var $helpers = array('Crumb', 'Html', 'Time');
+
 	function beforeFilter()
 	{
 		$this->userinfo = $this->Session->read('userinfo');

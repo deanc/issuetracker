@@ -62,13 +62,10 @@
 
 		<div id="content">
 			<div id="breadcrumb-nav">
-				<ul id="breadcrumb">
-					<li><a href="#">Home</a></li>
-					<li><a href="#">Ignore</a></li>
-					<li><a href="#">This</a></li>
-					<li><a href="#">For</a></li>
-					<li><a href="#">Now</a></li>
-				</ul>
+				<div id="breadcrumb">
+					<?php
+					?>
+				</div>
 				<?php echo $this->element('searchbox'); ?>
 			</div>
 
