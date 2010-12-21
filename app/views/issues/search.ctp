@@ -1,6 +1,7 @@
-<h2>Searching for "<?php echo htmlspecialchars($this->params['url']['keywords']); ?> </h2>
+<div class="clearfix">
+<div id="leftcol">
 
-
+<h2>Searching for "<?php echo htmlspecialchars($keywords); ?>"</h2>
 
 <?php
 
@@ -71,3 +72,8 @@ foreach($issues as $issue)
 <?php } else { ?>
 	<p>There are no issues here</p>
 <?php } ?>
+</div>
+<div id="rightcol">
+	<?php echo $this->element('saved_searches', array('searches' => $savedSearches)); ?>
+</div>
+</div>

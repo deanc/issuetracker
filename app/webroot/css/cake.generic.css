@@ -574,14 +574,16 @@ span.priority { display: block; height: 14px; color: #fff; font-size: 10px; padd
 #topbar-container { width: 900px; margin: 0 auto; }
 #topnav { float: left; }
 #topnav li { display: inline; margin: 0 10px; }
-#topnav li a { padding: 6px; color: #fff; text-decoration: none;}
+#topnav li a { padding: 6px; color: #eee; text-decoration: none;}
+#topnav li a:hover { color: #fff; }
 
 ul.projects { margin: 10px 0; padding: 0; list-style: none; }
 ul.projects li { background: #eee; padding: 10px; margin: 10px 0; border-radius: 5px; }
-ul.projects li a { font-size: 18px; color: #666; text-decoration: none; }
-ul.projects li a:hover { color: #000; }
+ul.projects li:hover { background: #ddd; }
+ul.projects li a { font-size: 18px; color: #666; text-decoration: none; display: block; }
+ul.projects li a:hover, ul.projects li:hover a { color: #000; }
 
-#searchbox { float: right; }
+#searchbox { float: right; height: 30px; line-height: 30px; }
 #IssueSearchForm { clear: both; width: 335px; float: right; margin-right:0; }
 #IssueSearchForm #IssueKeywords { height: 14px; font-size: 12px; padding: 2px; width: 250px; vertical-align: middle; }
 #IssueSearchForm .submit { display: inline; vertical-align: middle;   }
@@ -608,6 +610,16 @@ ul.projects li a:hover { color: #000; }
 									}
 
 
-.new { color: #ff0000; font-size: 10px; padding-left: 10px;}
+.new { font-weight: normal; color: #ff0000; font-size: 10px; padding-left: 10px;}
 
 tr.closed td.title a { color: #bbb; }
+
+#leftcol { margin-top: 30px; float: left; width: 620px; border-right: 1px dotted #eee; padding-right: 20px; }
+#rightcol { margin-top: 30px; float: right; width: 200px; }
+#rightcol .block { margin-bottom: 30px; }
+
+#breadcrumb-nav { height: 30px; background: #eee; border: 1px solid #ddd; border-radius: 3px; }
+#breadcrumb  { float: left; list-style: none; }
+#breadcrumb li { line-height: 30px; display: inline; padding: 5px 0; }
+#breadcrumb li a { font-weight: normal; color: #666; text-decoration: none; }
+

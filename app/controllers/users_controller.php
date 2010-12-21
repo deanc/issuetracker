@@ -2,7 +2,7 @@
 
 class UsersController extends AppController
 {
-	
+	var $helpers = array('Html', 'Time');
 	var $components = array('Email', 'Session');
 	
 	function login()
@@ -104,7 +104,12 @@ class UsersController extends AppController
 		$this->Cookie->delete('hash');
 		$this->Session->destroy('userinfo');
 		$this->flash('You have been logged out', '/');
-	}	
+	}
+
+	function admin_index()
+	{
+		$this->set('users', $this->User->find('all'));
+	}
 }
 
 ?>

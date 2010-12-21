@@ -2,7 +2,7 @@
 
 class ProjectsController extends AppController
 {
-    var $uses = array('Project', 'Issue', 'User', 'IssuePriority', 'ProjectUser');
+    var $uses = array('Project', 'Issue', 'User', 'IssuePriority', 'IssueStatus', 'ProjectUser', 'SavedSearch');
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
 	var $components = array('RequestHandler', 'Session');
 
@@ -11,34 +11,15 @@ class ProjectsController extends AppController
         parent::beforeFilter();
         if($this->params['action'] == 'issues')
         {
-    //		$statuses = Cache::read('statuses');
-    //		debug($statuses);
-    //		if(sizeof($statuses) == 0 OR 1==1)
-    //		{
-            $statuses = $this->IssueStatus->query("
-                SELECT
-                    IssueStatus.*
-                    ,sq.total
-                FROM
-                    issue_status as IssueStatus
-                LEFT JOIN
-                    (
-                        SELECT COUNT(*) AS total, status_id FROM issue GROUP BY status_id
-                    ) as sq ON (sq.status_id = IssueStatus.status_id)
-            ");
-    //			Cache::write('statuses', $statuses);
-    //		}
-		$s = array();
-		foreach($statuses AS $status)
-		{
-			$s[$status['IssueStatus']['status_id']] = $status['IssueStatus']['status'];// . ' (' . $status['sq']['total'] . ')';
+			$this->set('savedSearches', $this->SavedSearch->listAll(1));
+			$this->ProjectUser->bindModel(array(
+				'belongsTo' => array('User' => array('primaryKey' => 'User.user_id'))
+			));
+			$this->set('projectUsers', $this->ProjectUser->find('all', array(
+				'conditions' => array('ProjectUser.project_id' => $this->params['pass'][0])
+				)
+			));
 		}
-
-            $this->set('_statuses', $statuses);
-		$this->set('_statuses2', $s);
-        
-		$this->set('priorities', $this->Issue->IssuePriority->find('list', array('fields' => array('IssuePriority.priority'))));
-	}
     }
 
 	function index()
@@ -163,6 +144,11 @@ class ProjectsController extends AppController
 		}
 		echo json_encode($json);
 		die;
+	}
+
+	function admin_index()
+	{
+		$this->set('projects', $this->Project->find('all'));
 	}
 }
 

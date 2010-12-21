@@ -7,12 +7,13 @@ class AppController extends Controller
 	
 	function beforeFilter()
 	{
-		$logged_in = $this->isLoggedIn();
-		//debug(var_export($logged_in, true));
-		$this->set('is_logged_in', $logged_in);
-		if($logged_in)
+		$this->userinfo = $this->Session->read('userinfo');
+		$this->loggedIn = $this->isLoggedIn();
+
+		$this->set('is_logged_in', $this->loggedIn);
+		$this->set('userinfo', $this->userinfo);
+		if($this->loggedIn)
 		{
-			$this->set('userinfo', $this->Session->read('userinfo'));
 			$this->User->id = $this->Cookie->read('user_id');
 			$this->User->saveField('lastactivity', date('Y-m-d H:i:s'));
 
@@ -20,6 +21,12 @@ class AppController extends Controller
 			{
 				$this->Session->write('viewed', serialize(array()));
 			}
+		}
+
+		// Admin check
+		if(isset($this->prefix) AND $this->prefix === 'admin' AND $this->userinfo != null AND $this->userinfo['User']['admin'] != 1)
+		{
+			$this->redirect('/');
 		}
 
 		//debug($this->Session->read('viewed'));

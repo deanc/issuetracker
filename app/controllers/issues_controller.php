@@ -3,13 +3,24 @@
 class IssuesController extends AppController
 {
 	var $helpers = array('Javascript', 'Paginator', 'Time', 'Text');
-	var $components = array('RequestHandler', 'Notifier', 'Session');
+	var $components = array('RequestHandler', 'Notifier', 'Session','SearchFilter');
 	var $behaviours = array('Containable');
-	var $uses = array('Issue', 'Comment', 'User', 'IssueUser', 'Project');
+	var $uses = array('Issue', 'Comment', 'User', 'IssueUser', 'Project', 'SavedSearch');
 	
 	function beforeFilter()
 	{
-		parent::beforeFilter();
+		parent::beforefilter();
+
+		if(in_array($this->action, array('search')))
+		{
+			$this->set('savedSearches', $this->SavedSearch->listAll(1));
+		}
+
+		// logged in actions
+		if(in_array($this->action, array('edit','comment','delete')) AND $this->loggedIn === false)
+		{
+			$this->redirect('/');
+		}
 	}
 
 	function index()
@@ -109,12 +120,12 @@ class IssuesController extends AppController
 						}
 					}
 					
-		
+					$status = $this->IssueStatus->findBystatus_id($this->data['Issue']['status_id']);
 					foreach($emails AS $email)
 					{
 						$this->Notifier->addRecipient(null, $email);
 					}
-					$this->Notifier->send('Status changed on Issue #' . $id, 'issuestatuschanged', array(
+					$this->Notifier->send('[Status:' . $status['IssueStatus']['status'] . '] ' . $this->data['Issue']['title'], 'issuestatuschanged', array(
 						'username' => $userinfo['User']['username']
 						,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
 					));				
@@ -144,7 +155,7 @@ class IssuesController extends AppController
 				{
 					$this->Issue->save($this->data);
 					
-					$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
+					//$this->Issue->updateUsers($issue['Issue']['issue_id'], $this->data['Users']);
 
 					// notify the assignee
 					
@@ -164,6 +175,12 @@ class IssuesController extends AppController
 	{
 		if(!empty($this->data) AND $this->Session->check('userinfo'))
 		{
+			if(empty($this->data['Comment']['content']))
+			{
+				$this->flash('Please enter a comment if changing the status', '/issues/view/' . $id);
+				return;
+			}
+
 			$userinfo = $this->Session->read('userinfo');
 			$user_id = $userinfo['User']['user_id'];
 			$this->Comment->save(
@@ -211,7 +228,7 @@ class IssuesController extends AppController
 			{
 				$this->Notifier->addRecipient(null, $email);
 			}
-			$this->Notifier->send('New comment on Issue #' . $id, 'newcomment', array(
+			$this->Notifier->send('[New:comment] ' . $issue['Issue']['title'], 'newcomment', array(
 				'username' => $userinfo['User']['username']
 				,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
 			));
@@ -253,23 +270,36 @@ class IssuesController extends AppController
 	function search()
 	{
          //$this->set('project', $this->Project->findByproject_id($project_id));
-  
             $this->paginate = array(
                  'contain' => array('User', 'IssueStatus', 'IssuePriority')
 	              , 'limit' => 20
 	               ,'order' => 'Issue.updated DESC'
 	            );
 	    
-		    // look for url params
-		    $conditions = array(
-				'OR' => array(
-					'Issue.title LIKE ' => '%' . $this->params['url']['keywords'] . '%'
-					,'Issue.content LIKE ' => '%' . $this->params['url']['keywords'] . '%'
-				)
-			);
+			$conditions = array();
+			$keywords = $this->params['url']['keywords'];
+
+			$filter = $this->SearchFilter->parse($this->params['url']['keywords']);
+			if(sizeof($filter['conditions']) > 0)
+			{
+				$keywords = $filter['keywords'];
+				$conditions += $filter['conditions'];
+			}
+
+			if(strlen($keywords) > 0)
+			{
+		    	// look for url params
+		    	$conditions += array(
+					'OR' => array(
+						'Issue.title LIKE ' => '%' . $keywords . '%'
+						,'Issue.content LIKE ' => '%' . $keywords . '%'
+					)
+				);
+			}
+
 		    $this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
 				
-				
+			$this->set('keywords', $this->params['url']['keywords']);	
 		    $issues = $this->paginate('Issue');
 		    $this->set(compact('issues'));
 	}
