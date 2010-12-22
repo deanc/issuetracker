@@ -47,6 +47,7 @@ class Issue extends AppModel
 		'User' => array('foreignKey' => 'user_id')
 		,'IssueStatus' => array('foreignKey' => 'status_id')
 		,'IssuePriority' => array('foreignKey' => 'priority_id')
+		,'Project' => array('foreignKey' => 'project_id')
 	);
 
 	var $validate = array(

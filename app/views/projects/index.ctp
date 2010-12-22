@@ -1,4 +1,4 @@
-<h2>Projects</h2>
+<h2>Viewing all projects</h2>
 
 <ul class="projects">
 <?php

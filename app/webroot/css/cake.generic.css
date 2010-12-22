@@ -618,8 +618,8 @@ tr.closed td.title a { color: #bbb; }
 #rightcol { margin-top: 30px; float: right; width: 200px; }
 #rightcol .block { margin-bottom: 30px; }
 
-#breadcrumb-nav { height: 30px; background: #eee; border: 1px solid #ddd; border-radius: 3px; }
+#breadcrumb-nav { margin-bottom: 20px; height: 30px; background: #eee; border: 1px solid #ddd; border-radius: 3px; }
 #breadcrumb  { float: left; list-style: none; }
 #breadcrumb li { line-height: 30px; display: inline; padding: 5px 0; }
 #breadcrumb li a { font-weight: normal; color: #666; text-decoration: none; }
-
+#breadcrumb li a:hover { color: #000; }

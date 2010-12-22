@@ -63,8 +63,9 @@
 		<div id="content">
 			<div id="breadcrumb-nav">
 				<div id="breadcrumb">
-					<?php
-					?>
+ <? if(isset($breadcrumbs)) : ?> 
+  <?=$breadcrumb->display($breadcrumbs); ?> 
+  <? endif; ?> 
 				</div>
 				<?php echo $this->element('searchbox'); ?>
 			</div>

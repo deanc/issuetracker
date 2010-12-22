@@ -3,8 +3,8 @@ class AppController extends Controller
 {
 	var $cookieKey = 'adsfadsf1231232asxdfjkljlkjjk';
 	var $uses = array('IssueStatus', 'User');
-	var $components = array('Cookie', 'Session');
-	var $helpers = array('Crumb', 'Html', 'Time');
+	var $components = array('Cookie', 'Session', 'Breadcrumb');
+	var $helpers = array('Crumb', 'Html', 'Time', 'Breadcrumb');
 
 	function beforeFilter()
 	{
@@ -31,6 +31,13 @@ class AppController extends Controller
 		}
 
 		//debug($this->Session->read('viewed'));
+	}
+
+	function beforeRender()
+	{
+		if(is_object($this->Breadcrumb)) {
+			$this->set('breadcrumbs', $this->Breadcrumb->getBreadcrumbs());
+		}
 	}
 
 	public function isLoggedIn()

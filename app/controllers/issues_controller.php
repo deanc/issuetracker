@@ -42,7 +42,9 @@ class IssuesController extends AppController
 			$this->redirect('/');
 		}
 		$this->set('issue', $issue);
-		
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Projects', 'slug' => '/projects'));
+		$this->Breadcrumb->addBreadcrumb(array('title' => $issue['Project']['name'], 'slug' => '/projects/' . $issue['Project']['project_id'] . '/issues'));
+
 		if($this->Session->check('viewed'))
 		{
 			$viewed = unserialize($this->Session->read('viewed'));
@@ -77,6 +79,15 @@ class IssuesController extends AppController
 
 		$issue = $this->Issue->findByissue_id($id);
 		
+		// possibly truncate title for breadcrumb
+		App::import('helper', 'Text');
+		$text = new TextHelper;
+		$title = $text->truncate($issue['Issue']['title'], 25);
+
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Projects', 'slug' => '/projects'));
+		$this->Breadcrumb->addBreadcrumb(array('title' => $issue['Project']['name'], 'slug' => '/projects/' . $issue['Project']['project_id'] . '/issues'));
+		$this->Breadcrumb->addBreadcrumb(array('title' => $title, 'slug' => '/issues/view/' . $id));
+
 		$users = array();
 		foreach($issue['Users'] AS $user)
 		{
@@ -141,6 +152,12 @@ class IssuesController extends AppController
 	function create($project_id)
 	{
 		$this->set('_project_id', $project_id);
+		
+		$project = $this->Project->findByproject_id($project_id);
+
+		//breadcrumb
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Projects', 'slug' => '/projects'));
+		$this->Breadcrumb->addBreadcrumb(array('title' => $project['Project']['name'], '/projects/' . $project_id . '/issues'));
 
 		if($this->Session->check('userinfo'))
 		{

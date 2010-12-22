@@ -9,7 +9,7 @@ class BreadcrumbHelper extends Helper {
 
         if (is_array($aBreadcrumbs)) { 
 
-        $sBreadcrumbsID = isset($this->params['admin']) ? 'breadcrumbs' : 'breadcrumbs_admin'; 
+        $sBreadcrumbsID = isset($this->params['admin']) ? 'breadcrumb' : 'breadcrumb-admin'; 
         $returnHTML = '<ul id="' . $sBreadcrumbsID . '">'; 
 
         # Build the first breadcrumb dependent on if admin area is active or the front end   
@@ -17,8 +17,15 @@ class BreadcrumbHelper extends Helper {
         $returnHTML .= '<li>' . $this->Html->link($this->aFirstBreadcrumb['title'], "/" . $this->aFirstBreadcrumb['slug']) . '</li>'; 
 
         foreach($aBreadcrumbs as $key => $value) { 
-            $returnHTML .= '<li>' . $this->Html->link($value['title'], "/" . $value['slug']) . '</li>'; 
-        } 
+            if(isset($value['slug']))
+			{
+				$returnHTML .= '<li>' . $this->Html->link($value['title'], "/" . $value['slug']) . '</li>'; 
+        	}
+			else
+			{
+				$returnHTML .= '<li>' . $value['title'] . '</li>';
+			}
+		}
 
         $returnHTML .= '</ul>'; 
         return $returnHTML; 

@@ -24,7 +24,7 @@ class ProjectsController extends AppController
 
 	function index()
 	{
-        
+
 		$userinfo = $this->Session->read('userinfo');
         $conditions = array('Project.public' => 1);
         if(!empty($userinfo))
@@ -64,7 +64,10 @@ class ProjectsController extends AppController
 
     function issues($project_id, $status = 0, $priority = 0)
     {
-        $this->set('project', $this->Project->findByproject_id($project_id));
+        $project = $this->Project->findByproject_id($project_id);
+		$this->set('project', $project);
+
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Projects', 'slug' => '/projects'));
 
  		$this->paginate = array(
 			'contain' => array('User', 'IssueStatus', 'IssuePriority')
