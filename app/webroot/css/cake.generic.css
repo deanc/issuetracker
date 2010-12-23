@@ -550,10 +550,14 @@ div.code-coverage-results span.result-good {
 #content { min-height: 100%; }
 #user-box { float: right; height: 38px; position: relative; }
 #user-box a { color: #fff; text-decoration: none; }
-#user-box img { padding-right: 5px; border-radius: 2px; }
+#user-box img { padding-right: 5px; border-radius: 2px; vertical-align: middle; }
+#user-box .toggle { cursor: pointer; }
+#user-box img.arrow { padding-left: 10px; } 
 #user-box-popup { display: none; position: absolute; right: 0; top: 31px; background: #006FBB; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
-#user-box-popup ul { list-style :none; margin: 0; }
-#user-box-popup li { min-width: 100px; padding: 5px; }
+#user-box-popup ul { list-style :none; margin: 0;}
+#user-box-popup li { min-width: 100px; margin: 0; }
+#user-box-popup li a { padding: 5px 10px; display: block; }
+#user-box-popup li a:hover { background: #248ED6;  }
 
 #center { }
 #center table { width: 100%; }
@@ -577,9 +581,9 @@ span.priority { display: block; height: 14px; color: #fff; font-size: 10px; padd
 #topbar { clear: both; padding: 6px 0 25px 0;  background: #006FBB; border-bottom: 6px solid #005188; border-top: 1px solid #007ED5;}
 #topbar-container { width: 900px; margin: 0 auto; }
 #topnav { margin: 0; float: left; }
-#topnav li { display: inline; margin: 0 10px 0 0; }
-#topnav li a { padding: 6px 0; color: #eee; text-decoration: none;}
-#topnav li a:hover { color: #fff; }
+#topnav li { display: inline; margin: 0 0px 0 0; }
+#topnav li a { padding: 6px 15px; color: #eee; text-decoration: none; font-weight: bold; }
+#topnav li a:hover { color: #fff; background: #248ED6; }
 
 ul.projects { margin: 10px 0; padding: 0; list-style: none; }
 ul.projects li { background: #eee; padding: 10px; margin: 10px 0; border-radius: 5px; }

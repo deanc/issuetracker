@@ -30,6 +30,7 @@
 
 		echo $this->Html->css('cake.generic');
 		echo $this->Html->script('/js/jquery-1.4.2.min.js');
+		echo $this->Html->script('/js/global.js');
 		echo $scripts_for_layout;
 	?>
 </head>
@@ -38,12 +39,18 @@
 	<div id="topbar"><div id="topbar-container">
 		<ul id="topnav">
 			<li><?php echo $this->Html->link('Home', '/'); ?></li>
-			<!-- <li><?php echo $this->Html->link('Projects', '/'); ?></li> -->
 			<?php
 			if(isset($project))
 			{
 				echo '<li>' . $this->Html->link('Create Issue', '/issues/create/' . $project['Project']['project_id']). '</li>';
 			}
+
+			if(isset($userinfo))
+			{
+				//debug($this);
+				echo '<li>' . $this->Html->link('My Profile', '/user/' . $userinfo['User']['username']) . '</li>';
+			}
+
 			if(isset($userinfo) AND $userinfo['User']['admin']) {
 				echo '<li>' . $this->Html->link('Admin CP', '/admincp') . '</li>';
 			}

@@ -1,6 +1,6 @@
 <div id="user-box">
 
-<img style="vertical-align: middle" src="http://www.gravatar.com/avatar/<?php echo md5($userinfo['User']['email']);?>.jpg?size=20" border="0" alt="" /> <?php echo $userinfo['User']['username'] . ' ' . date('H:i'); ?>
+<span class="toggle"><img style="vertical-align: middle" src="http://www.gravatar.com/avatar/<?php echo md5($userinfo['User']['email']);?>.jpg?size=20" border="0" alt="" /> <?php echo $userinfo['User']['username'] . ' <img src="' . $html->url('/img/arrow.png') . '" border="0" alt="" class="arrow" /></span>'; ?>
 
 <div id="user-box-popup">
 <ul>
