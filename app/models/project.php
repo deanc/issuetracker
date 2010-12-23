@@ -12,6 +12,11 @@ class Project extends AppModel {
     var $useTable = 'project';
     var $primaryKey = 'project_id';
 
+	var $hasAndBelongsToMany = array(
+		'User' => array('with' => 'ProjectUser')
+	);
+
+/*
      var $hasAndBelongsToMany = array(
             'User' =>
                 array(
@@ -30,4 +35,5 @@ class Project extends AppModel {
                     'insertQuery'            => ''
                 )
         );
+		*/
 }

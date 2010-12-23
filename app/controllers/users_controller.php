@@ -5,15 +5,30 @@ class UsersController extends AppController
 	var $helpers = array('Html', 'Time');
 	var $components = array('Email', 'Session');
 	
+	function profile($username)
+	{
+		$user = $this->User->findByusername($username);
+		if(empty($user))
+		{
+			$this->flash('User does not exist', '/');
+		}
+		else
+		{
+			$this->set('user', $user);
+		}
+	}
+
 	function login()
 	{
 		if(!$this->isLoggedIn())
 		{
 			if (!empty($this->data))
 			{
+				$salt = $this->User->findByemail($this->data['User']['email']);
+
 				$user = $this->User->find('first', array('conditions' => array(
 					'User.email' => $this->data['User']['email']
-					,'User.password' => md5($this->data['User']['password'])
+					,'User.password' => md5($this->data['User']['password'] . $salt['User']['salt'])
 				)));
 
 				if(!empty($user))
@@ -106,9 +121,51 @@ class UsersController extends AppController
 		$this->flash('You have been logged out', '/');
 	}
 
+	function ajaxFind()
+	{
+		//$existing = explode(',', $_GET['id_list']);
+		//$existing = array_unique($existing);
+
+		$users = $this->User->find('all', array(
+			'fields' => array('User.user_id', 'User.username')
+			,'conditions' => array('User.username LIKE \'%' . preg_replace('/[^a-z0-9]+/i', '', $_GET['tag']) . '%\'')
+		));
+
+		$json =  array();
+		foreach($users AS $u)
+		{
+			$json[] = array(
+				'value' => $u['User']['user_id']
+				,'key' => $u['User']['username']
+			);
+		}
+		echo json_encode($json);die;
+	}
+
 	function admin_index()
 	{
 		$this->set('users', $this->User->find('all'));
+	}
+
+	function admin_edit($id = null)
+	{
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Admin CP', 'slug' => '/admincp'));
+		$this->Breadcrumb->addBreadcrumb(array('title' => 'Users', 'slug' => '/admin/users'));
+		
+		if(empty($this->data))
+		{
+			$this->data = $this->User->findByuser_id($id);
+		}
+		else
+		{
+			$this->User->set($this->data);
+			if($this->User->validates())
+			{
+				//debug('wat');
+				$this->User->save();
+				$this->flash('User saved', '/admin/users');
+			}
+		}
 	}
 }
 

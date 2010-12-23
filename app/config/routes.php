@@ -32,6 +32,15 @@
  */
 	Router::connect('/pages/*', array('controller' => 'pages', 'action' => 'display'));
 
+	Router::connect('/admincp', array('controller' => 'admin', 'action' => 'index'));
+
+	Router::connect('/user/:username',
+		array('controller' => 'users', 'action' => 'profile'),
+		array(
+			'pass' => array('username')
+		)
+	);
+
 Router::connect(
         '/projects/:id/issues',
         array('controller' => 'projects', 'action' => 'issues'),

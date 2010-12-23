@@ -4,15 +4,16 @@ class AppController extends Controller
 	var $cookieKey = 'adsfadsf1231232asxdfjkljlkjjk';
 	var $uses = array('IssueStatus', 'User');
 	var $components = array('Cookie', 'Session', 'Breadcrumb');
-	var $helpers = array('Crumb', 'Html', 'Time', 'Breadcrumb');
+	var $helpers = array('Crumb', 'Html', 'Time', 'Breadcrumb', 'Form');
+
+	var $loggedIn = null;
+	var $userinfo = null;
 
 	function beforeFilter()
 	{
 		$this->userinfo = $this->Session->read('userinfo');
 		$this->loggedIn = $this->isLoggedIn();
 
-		$this->set('is_logged_in', $this->loggedIn);
-		$this->set('userinfo', $this->userinfo);
 		if($this->loggedIn)
 		{
 			$this->User->id = $this->Cookie->read('user_id');
@@ -35,6 +36,9 @@ class AppController extends Controller
 
 	function beforeRender()
 	{
+		$this->set('loggedIn', $this->loggedIn);
+		$this->set('userinfo', $this->userinfo);
+
 		if(is_object($this->Breadcrumb)) {
 			$this->set('breadcrumbs', $this->Breadcrumb->getBreadcrumbs());
 		}

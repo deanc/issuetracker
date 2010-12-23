@@ -1,6 +1,6 @@
 <h2><?php echo $issue['Issue']['title'] ?> (<?php echo $issue['IssueStatus']['status'] . ' - ' . $issue['IssuePriority']['priority']; ?>)</h2>
 <p class="issue-info">
-Posted by: <?php echo $issue['User']['username'] ?> 
+Posted by: <?= $this->element('username', array('user' => $issue['User'])); ?> 
 - Created: <?php echo $time->niceShort($issue['Issue']['created']) ?><span style="float: right;"><?php echo $html->link('Edit', '/issues/edit/' . $issue['Issue']['issue_id']) . ' | ' . $html->link('Delete', '/issues/delete/' . $issue['Issue']['issue_id']); ?></span><br />
 </p>
 
@@ -11,7 +11,7 @@ Posted by: <?php echo $issue['User']['username'] ?>
 <h3>Comments</h3>
 <?php
 
-	if($is_logged_in)
+	if($loggedIn)
 	{
 	?>
         <fieldset>

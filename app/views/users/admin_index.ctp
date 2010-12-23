@@ -1,3 +1,5 @@
+<p><?= $html->link('Add', '/admin/users/edit'); ?></p>
+
 <table>
 	<thead>
 <?php

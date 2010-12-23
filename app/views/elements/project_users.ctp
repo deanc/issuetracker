@@ -10,7 +10,7 @@
 		echo '<ul>';
 		foreach($users as $user)
 		{
-			echo '<li>' . $user['User']['username'] . '</li>';
+			echo '<li>' . $html->link($user['User']['username'], '/user/' . $user['User']['username']) . '</li>';
 		}
 		echo '</ul>';
 	}

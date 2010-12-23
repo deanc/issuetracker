@@ -153,6 +153,29 @@ class ProjectsController extends AppController
 	{
 		$this->set('projects', $this->Project->find('all'));
 	}
+
+	function admin_edit($id = null)
+	{
+		if(empty($this->data))
+		{
+			$this->data = $this->Project->findByproject_id($id);
+			$this->set('users', $this->ProjectUser->getUsers($id, true));
+		}
+		else
+		{	
+			$this->Project->set($this->data);
+			if($this->Project->validates())
+			{
+				$this->Project->save();
+				if(isset($this->data['Users']))
+				{
+					$this->ProjectUser->updateUsers($this->Project->id, $this->data['Users']);
+				}
+				
+				$this->flash('Project updated', '/admin/projects');
+			}
+		}
+	}
 }
 
 ?>

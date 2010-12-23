@@ -44,10 +44,13 @@
 			{
 				echo '<li>' . $this->Html->link('Create Issue', '/issues/create/' . $project['Project']['project_id']). '</li>';
 			}
+			if(isset($userinfo) AND $userinfo['User']['admin']) {
+				echo '<li>' . $this->Html->link('Admin CP', '/admincp') . '</li>';
+			}
 			?>
 		</ul>
 		<?php
-		if($is_logged_in)
+		if($loggedIn)
 		{
 			echo $this->element('welcomebox', array('userinfo' => $userinfo));
 		}
