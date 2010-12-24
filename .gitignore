@@ -2,6 +2,7 @@
 /app/config/database.php
 /app/config/notifications.php
 /app/config/core.php
+/app/config/api.php
 /app/tmp
 /plugins
 /vendors
