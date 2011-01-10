@@ -33,6 +33,11 @@ class ApiController extends AppController
 							)
 						));////
 						$this->Comment->save();
+
+						if(isset($change['status']))
+						{
+							//$status = $this->IssueStatus->findBy
+						}
 					}
 				} else { die('bad key'); }
 			} else { die('no key and/or msg set in url'); }
