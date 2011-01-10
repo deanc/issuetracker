@@ -19,9 +19,10 @@ class ApiController extends AppController
 					$parsed = $this->GitParser->parse($this->params['url']['msg']);
 					$msg = sprintf(
 						'New commit to branch %s:' . "\r\n%s"
-						, $this->params['url']['branch']
-						, $this->params['url']['msg']
+						, urldecode($this->params['url']['branch'])
+						, urldecode($this->params['url']['msg'])
 					);
+					
 					foreach($parsed AS $change)
 					{
 						$this->Comment->set(array(
@@ -33,9 +34,10 @@ class ApiController extends AppController
 						));////
 						$this->Comment->save();
 					}
-				}
-			}
+				} else { die('bad key'); }
+			} else { die('no key and/or msg set in url'); }
 		}
+		else { die('no key set in config'); }
 	}
 }
 

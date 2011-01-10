@@ -4,7 +4,9 @@ class GitParserComponent extends Object
 {
 	function parse($string)
 	{
+		$string = urldecode($string);
 		preg_match_all('/\[#(\d+)(:[a-z])?\]/i', $string, $matches);
+		
 		$ret = array();
 		foreach($matches[0] AS $k => $match)
 		{
