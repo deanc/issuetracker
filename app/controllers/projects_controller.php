@@ -104,10 +104,7 @@ class ProjectsController extends AppController
 
 
     	$issues = $this->paginate('Issue');
-
     	$this->set(compact('issues'));
-		$this->set('viewed', unserialize($this->Session->read('viewed')));
-		$this->set('lastvisit', $this->Session->read('lastvisit'));
     }
 
     function users($project_id, $issue_id = 0)

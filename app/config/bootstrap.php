@@ -50,5 +50,5 @@
  */
 
 Configure::load('notifications');  
-
+Configure::load('api');
 ?>

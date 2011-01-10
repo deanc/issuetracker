@@ -8,6 +8,8 @@ class AppController extends Controller
 
 	var $loggedIn = null;
 	var $userinfo = null;
+	var $lastVisit = null;
+	var $viewedIssues = array();
 
 	function beforeFilter()
 	{
@@ -23,7 +25,12 @@ class AppController extends Controller
 			{
 				$this->Session->write('viewed', serialize(array()));
 			}
-		}
+
+        	$viewed = $this->Session->read('viewed');
+            if($viewed != null) { $this->viewedIssues = unserialize($viewed); }
+
+			$this->lastVisit = $this->Session->read('lastvisit');
+         }
 
 		// Admin check
 		if(isset($this->prefix) AND $this->prefix === 'admin' AND $this->userinfo != null AND $this->userinfo['User']['admin'] != 1)
@@ -38,6 +45,8 @@ class AppController extends Controller
 	{
 		$this->set('loggedIn', $this->loggedIn);
 		$this->set('userinfo', $this->userinfo);
+		$this->set('viewedIssues', $this->viewedIssues);
+		$this->set('lastVisit', $this->lastVisit);
 
 		if(is_object($this->Breadcrumb)) {
 			$this->set('breadcrumbs', $this->Breadcrumb->getBreadcrumbs());

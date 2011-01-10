@@ -5,12 +5,7 @@
 
 foreach($projects AS $project)
 {
-  $new = '';
-  	if(strtotime($user['User']['lastactivity'])-600 < strtotime($project['Project']['lastactivity']))
-	{
-		$new = '<span class="new">New!</span>';
-	}
-
+	$new = $this->element('isnew', array('project' => $project['Project']));
     echo '<li><span style="float: right">(' . $project['Project']['total_issues'] . ')</span> ' . $html->link($project['Project']['name'] . $new, '/projects/' . $project['Project']['project_id'] . '/issues', array('escape' => false)) .  '</li>';
 }
 ?>

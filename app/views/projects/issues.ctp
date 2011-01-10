@@ -42,8 +42,7 @@
 		<?php
 foreach($issues as $issue)		
 {
-	$new = $this->element('isnew', array('issue' => $issue['Issue'], 'lastvisit' => $lastvisit, 'viewed' => $viewed));
-
+	$new = $this->element('isnew', array('issue' => $issue['Issue']));
 	echo '<tr class="' . strtolower($issue['IssueStatus']['status']) . '">';
 	echo '<td class="title">' . $html->link($issue['Issue']['title'], '/projects/' . $issue['Issue']['project_id'] . '/issue/' . $issue['Issue']['issue_id']) . $new . '</td>';
 	echo '<td class="user">' . $issue['User']['username'] . '</td>';

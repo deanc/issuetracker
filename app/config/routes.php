@@ -34,6 +34,8 @@
 
 	Router::connect('/admincp', array('controller' => 'admin', 'action' => 'index'));
 
+	Router::connect('/api', array('controller' => 'api', 'action' => 'commit'));
+
 	Router::connect('/user/:username',
 		array('controller' => 'users', 'action' => 'profile'),
 		array(

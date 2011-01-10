@@ -18,6 +18,16 @@ class UsersController extends AppController
 		}
 	}
 
+	function searches()
+	{
+		App::import('model', 'SavedSearch');
+		$ss = new SavedSearch;
+		$searches = $ss->find('all', array(
+			'conditions' => array('SavedSearch.user_id' => $this->userinfo['User']['user_id'])
+		));
+		$this->set('searches', $searches);
+	}
+
 	function login()
 	{
 		if(!$this->isLoggedIn())
