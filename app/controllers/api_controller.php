@@ -30,7 +30,7 @@ class ApiController extends AppController
 								,'content' => $msg
 								,'user_id' => $config['user_id']
 							)
-						));///
+						));////
 						$this->Comment->save();
 					}
 				}
