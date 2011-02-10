@@ -29,7 +29,7 @@
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('cake.generic');
-		echo $this->Html->script('/js/jquery-1.4.2.min.js');
+		echo $this->Html->script('/js/jquery-1.5.js');
 		echo $this->Html->script('/js/global.js');
 		echo $scripts_for_layout;
 	?>
