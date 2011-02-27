@@ -18,21 +18,15 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+include_once dirname(__FILE__) . DS . 'bake.php';
+
 /**
  * Task class for creating and updating test files.
  *
  * @package       cake
  * @subpackage    cake.cake.console.libs.tasks
  */
-class TestTask extends Shell {
-
-/**
- * Name of plugin
- *
- * @var string
- * @access public
- */
-	var $plugin = null;
+class TestTask extends BakeTask {
 
 /**
  * path to TESTS directory
@@ -66,12 +60,6 @@ class TestTask extends Shell {
  */
 	var $_fixtures = array();
 
-/**
- * Flag for interactive mode
- *
- * @var boolean
- */
-	var $interactive = false;
 
 /**
  * Execution method always used for tasks
@@ -107,14 +95,12 @@ class TestTask extends Shell {
 		$this->out(sprintf(__("Path: %s", true), $this->path));
 		$this->hr();
 
-		$selection = null;
 		if ($type) {
 			$type = Inflector::camelize($type);
 			if (!in_array($type, $this->classTypes)) {
-				unset($type);
+				$this->error(sprintf('Incorrect type provided.  Please choose one of %s', implode(', ', $this->classTypes)));
 			}
-		}
-		if (!$type) {
+		} else {
 			$type = $this->getObjectType();
 		}
 		$className = $this->getClassName($type);
@@ -195,7 +181,20 @@ class TestTask extends Shell {
  * @access public
  */
 	function getClassName($objectType) {
-		$options = App::objects(strtolower($objectType));
+		$type = strtolower($objectType);
+		if ($this->plugin) {
+			$path = Inflector::pluralize($type);
+			if ($type === 'helper') {
+				$path = 'views' . DS . $path;
+			} elseif ($type === 'component') {
+				$path = 'controllers' . DS . $path;
+			} elseif ($type === 'behavior') {
+				$path = 'models' . DS . $path;
+			}
+			$options = App::objects($type, App::pluginPath($this->plugin) . $path, false);
+		} else {
+			$options = App::objects($type);
+		}
 		$this->out(sprintf(__('Choose a %s class', true), $objectType));
 		$keys = array();
 		foreach ($options as $key => $option) {
@@ -434,11 +433,8 @@ class TestTask extends Shell {
  * @access public
  */
 	function testCaseFileName($type, $className) {
-		$path = $this->path;
-		if (isset($this->plugin)) {
-			$path = $this->_pluginPath($this->plugin) . 'tests' . DS;
-		}
-		$path .= 'cases' . DS . Inflector::tableize($type) . DS;
+		$path = $this->getPath();;
+		$path .= 'cases' . DS . strtolower($type) . 's' . DS;
 		if (strtolower($type) == 'controller') {
 			$className = $this->getRealClassName($type, $className);
 		}
@@ -471,4 +467,3 @@ class TestTask extends Shell {
 		$this->_stop();
 	}
 }
-?>

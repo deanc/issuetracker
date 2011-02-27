@@ -1,6 +1,6 @@
 <?php
 /**
- * Short description for file.
+ * Dbo Source
  *
  * PHP versions 4 and 5
  *
@@ -53,12 +53,24 @@ class DboSource extends DataSource {
 	var $alias = 'AS ';
 
 /**
- * Caches result from query parsing operations
+ * Caches result from query parsing operations.  Cached results for both DboSource::name() and
+ * DboSource::conditions() will be stored here.  Method caching uses `crc32()` which is
+ * fast but can collisions more easily than other hashing algorithms.  If you have problems
+ * with collisions, set DboSource::$cacheMethods to false.
  *
  * @var array
  * @access public
  */
 	var $methodCache = array();
+
+/**
+ * Whether or not to cache the results of DboSource::name() and DboSource::conditions()
+ * into the memory cache.  Set to false to disable the use of the memory cache.
+ *
+ * @var boolean.
+ * @access public
+ */
+	var $cacheMethods = true ;
 
 /**
  * Bypass automatic adding of joined fields/associations.
@@ -87,6 +99,13 @@ class DboSource extends DataSource {
 		'commit' => 'COMMIT',
 		'rollback' => 'ROLLBACK'
 	);
+
+/**
+ * Separator string for virtualField composition
+ *
+ * @var string
+ */
+	var $virtualFieldSeparator = '__';
 
 /**
  * List of table engine specific parameters used on table creating
@@ -134,7 +153,7 @@ class DboSource extends DataSource {
  * @return boolean True on success, false on failure
  * @access public
  */
-	function reconnect($config = null) {
+	function reconnect($config = array()) {
 		$this->disconnect();
 		$this->setConfig($config);
 		$this->_sources = null;
@@ -423,10 +442,10 @@ class DboSource extends DataSource {
 	function fetchVirtualField(&$result) {
 		if (isset($result[0]) && is_array($result[0])) {
 			foreach ($result[0] as $field => $value) {
-				if (strpos($field, '__') === false) {
+				if (strpos($field, $this->virtualFieldSeparator) === false) {
 					continue;
 				}
-				list($alias, $virtual) = explode('__', $field);
+				list($alias, $virtual) = explode($this->virtualFieldSeparator, $field);
 
 				if (!ClassRegistry::isKeySet($alias)) {
 					return;
@@ -461,10 +480,47 @@ class DboSource extends DataSource {
 	}
 
 /**
+ * Empties the method caches.
+ * These caches are used by DboSource::name() and DboSource::conditions()
+ *
+ * @return void
+ */
+	function flushMethodCache() {
+		$this->methodCache = array();
+	}
+
+/**
+ * Cache a value into the methodCaches.  Will respect the value of DboSource::$cacheMethods.
+ * Will retrieve a value from the cache if $value is null.
+ *
+ * If caching is disabled and a write is attempted, the $value will be returned.
+ * A read will either return the value or null.
+ *
+ * @param string $method Name of the method being cached.
+ * @param string $key The keyname for the cache operation.
+ * @param mixed $value The value to cache into memory.
+ * @return mixed Either null on failure, or the value if its set.
+ */
+	function cacheMethod($method, $key, $value = null) {
+		if ($this->cacheMethods === false) {
+			return $value;
+		}
+		if ($value === null) {
+			return (isset($this->methodCache[$method][$key])) ? $this->methodCache[$method][$key] : null;
+		}
+		return $this->methodCache[$method][$key] = $value;
+	}
+
+/**
  * Returns a quoted name of $data for use in an SQL statement.
  * Strips fields out of SQL functions before quoting.
  *
- * @param string $data
+ * Results of this method are stored in a memory cache.  This improves performance, but
+ * because the method uses a simple hashing algorithm it can infrequently have collisions.
+ * Setting DboSource::$cacheMethods to false will disable the memory cache.
+ *
+ * @param mixed $data Either a string with a column to quote. An array of columns to quote or an
+ *   object from DboSource::expression() or DboSource::identifier()
  * @return string SQL field
  * @access public
  */
@@ -475,9 +531,6 @@ class DboSource extends DataSource {
 		if ($data === '*') {
 			return '*';
 		}
-		if (is_object($data) && isset($data->type)) {
-			return $data->value;
-		}
 		if (is_array($data)) {
 			foreach ($data as $i => $dataItem) {
 				$data[$i] = $this->name($dataItem);
@@ -485,27 +538,43 @@ class DboSource extends DataSource {
 			return $data;
 		}
 		$cacheKey = crc32($this->startQuote.$data.$this->endQuote);
-		if (isset($this->methodCache[__FUNCTION__][$cacheKey])) {
-			return $this->methodCache[__FUNCTION__][$cacheKey];
+		if ($return = $this->cacheMethod(__FUNCTION__, $cacheKey)) {
+			return $return;
 		}
 		$data = trim($data);
-		if (preg_match('/^[\w-]+(\.[\w-]+)*$/', $data)) { // string, string.string
+		if (preg_match('/^[\w-]+(?:\.[^ \*]*)*$/', $data)) { // string, string.string
 			if (strpos($data, '.') === false) { // string
-				return $this->methodCache[__FUNCTION__][$cacheKey] = $this->startQuote . $data . $this->endQuote;
+				return $this->cacheMethod(__FUNCTION__, $cacheKey, $this->startQuote . $data . $this->endQuote);
 			}
 			$items = explode('.', $data);
-			return $this->methodCache[__FUNCTION__][$cacheKey] = $this->startQuote . implode($this->endQuote . '.' . $this->startQuote, $items) . $this->endQuote;
+			return $this->cacheMethod(__FUNCTION__, $cacheKey,
+				$this->startQuote . implode($this->endQuote . '.' . $this->startQuote, $items) . $this->endQuote
+			);
 		}
 		if (preg_match('/^[\w-]+\.\*$/', $data)) { // string.*
-			return $this->methodCache[__FUNCTION__][$cacheKey] = $this->startQuote . str_replace('.*', $this->endQuote . '.*', $data);
+			return $this->cacheMethod(__FUNCTION__, $cacheKey,
+				$this->startQuote . str_replace('.*', $this->endQuote . '.*', $data)
+			);
 		}
 		if (preg_match('/^([\w-]+)\((.*)\)$/', $data, $matches)) { // Functions
-			return $this->methodCache[__FUNCTION__][$cacheKey] = $matches[1] . '(' . $this->name($matches[2]) . ')';
+			return $this->cacheMethod(__FUNCTION__, $cacheKey,
+				 $matches[1] . '(' . $this->name($matches[2]) . ')'
+			);
 		}
-		if (preg_match('/^([\w-]+(\.[\w-]+|\(.*\))*)\s+' . preg_quote($this->alias) . '\s*([\w-]+)$/', $data, $matches)) {
-			return $this->methodCache[__FUNCTION__][$cacheKey] = preg_replace('/\s{2,}/', ' ', $this->name($matches[1]) . ' ' . $this->alias . ' ' . $this->name($matches[3]));
+		if (
+			preg_match('/^([\w-]+(\.[\w-]+|\(.*\))*)\s+' . preg_quote($this->alias) . '\s*([\w-]+)$/', $data, $matches
+		)) {
+			return $this->cacheMethod(
+				__FUNCTION__, $cacheKey,
+				preg_replace(
+					'/\s{2,}/', ' ', $this->name($matches[1]) . ' ' . $this->alias . ' ' . $this->name($matches[3])
+				)
+			);
 		}
-		return $this->methodCache[__FUNCTION__][$cacheKey] = $data;
+		if (preg_match('/^[\w-_\s]*[\w-_]+/', $data)) {
+			return $this->cacheMethod(__FUNCTION__, $cacheKey, $this->startQuote . $data . $this->endQuote);
+		}
+		return $this->cacheMethod(__FUNCTION__, $cacheKey, $data);
 	}
 
 /**
@@ -564,7 +633,7 @@ class DboSource extends DataSource {
 			$controller = null;
 			$View =& new View($controller, false);
 			$View->set('logs', array($this->configKeyName => $log));
-			echo $View->element('sql_dump');
+			echo $View->element('sql_dump', array('_forced_from_dbo_' => true));
 		} else {
 			foreach ($log['log'] as $k => $i) {
 				print (($k + 1) . ". {$i['query']} {$i['error']}\n");
@@ -775,10 +844,14 @@ class DboSource extends DataSource {
 						$db =& $this;
 					}
 
-					if (isset($db)) {
+					if (isset($db) && method_exists($db, 'queryAssociation')) {
 						$stack = array($assoc);
 						$db->queryAssociation($model, $linkModel, $type, $assoc, $assocData, $array, true, $resultSet, $model->recursive - 1, $stack);
 						unset($db);
+
+						if ($type === 'hasMany') {
+							$filtered []= $assoc;
+						}
 					}
 				}
 			}
@@ -866,6 +939,7 @@ class DboSource extends DataSource {
 				}
 
 				if (!empty($ins)) {
+					$ins = array_unique($ins);
 					$fetch = $this->fetchAssociated($model, $query, $ins);
 				}
 
@@ -897,9 +971,9 @@ class DboSource extends DataSource {
 					}
 				}
 				if (!empty($ins)) {
+					$ins = array_unique($ins);
 					if (count($ins) > 1) {
 						$query = str_replace('{$__cakeID__$}', '(' .implode(', ', $ins) .')', $query);
-						$query = str_replace('= (', 'IN (', $query);
 						$query = str_replace('= (', 'IN (', $query);
 					} else {
 						$query = str_replace('{$__cakeID__$}',$ins[0], $query);
@@ -1001,7 +1075,6 @@ class DboSource extends DataSource {
 	function fetchAssociated($model, $query, $ids) {
 		$query = str_replace('{$__cakeID__$}', implode(', ', $ids), $query);
 		if (count($ids) > 1) {
-			$query = str_replace('= (', 'IN (', $query);
 			$query = str_replace('= (', 'IN (', $query);
 		}
 		return $this->fetchAll($query, $model->cacheQueries, $model->alias);
@@ -1150,10 +1223,10 @@ class DboSource extends DataSource {
 		} elseif (!empty($model->hasMany) && $model->recursive > -1) {
 			$assocFields = $this->fields($model, $model->alias, array("{$model->alias}.{$model->primaryKey}"));
 			$passedFields = $this->fields($model, $model->alias, $queryData['fields']);
-
 			if (count($passedFields) === 1) {
 				$match = strpos($passedFields[0], $assocFields[0]);
-				$match1 = strpos($passedFields[0], 'COUNT(');
+				$match1 = (bool)preg_match('/^[a-z]+\(/i', $passedFields[0]);
+
 				if ($match === false && $match1 === false) {
 					$queryData['fields'] = array_merge($passedFields, $assocFields);
 				} else {
@@ -1607,6 +1680,26 @@ class DboSource extends DataSource {
 		} elseif ($conditions === null) {
 			$conditions = $this->conditions($this->defaultConditions($model, $conditions, false), true, true, $model);
 		} else {
+			$noJoin = true;
+			foreach ($conditions as $field => $value) {
+				$originalField = $field;
+				if (strpos($field, '.') !== false) {
+					list($alias, $field) = explode('.', $field);
+					$field = ltrim($field, $this->startQuote);
+					$field = rtrim($field, $this->endQuote);
+				}
+				if (!$model->hasField($field)) {
+					$noJoin = false;
+					break;
+				}
+				if ($field !== $originalField) {
+					$conditions[$field] = $value;
+					unset($conditions[$originalField]);
+				}
+			}
+			if ($noJoin === true) {
+				return $this->conditions($conditions);
+			}
 			$idList = $model->find('all', array(
 				'fields' => "{$model->alias}.{$model->primaryKey}",
 				'conditions' => $conditions
@@ -1815,7 +1908,7 @@ class DboSource extends DataSource {
  */
 	function __scrubQueryData($data) {
 		foreach (array('conditions', 'fields', 'joins', 'order', 'limit', 'offset', 'group') as $key) {
-			if (!isset($data[$key]) || empty($data[$key])) {
+			if (empty($data[$key])) {
 				$data[$key] = array();
 			}
 		}
@@ -1833,9 +1926,9 @@ class DboSource extends DataSource {
 	function _constructVirtualFields(&$model, $alias, $fields) {
 		$virtual = array();
 		foreach ($fields as $field) {
-			$virtualField = $this->name("{$alias}__{$field}");
+			$virtualField = $this->name($alias . $this->virtualFieldSeparator . $field);
 			$expression = $this->__quoteFields($model->getVirtualField($field));
-			$virtual[] = '(' .$expression . ") {$this->alias} {$virtualField}";
+			$virtual[] = '(' . $expression . ") {$this->alias} {$virtualField}";
 		}
 		return $virtual;
 	}
@@ -1865,8 +1958,8 @@ class DboSource extends DataSource {
 			$quote
 		);
 		$cacheKey = crc32(serialize($cacheKey));
-		if (isset($this->methodCache[__FUNCTION__][$cacheKey])) {
-			return $this->methodCache[__FUNCTION__][$cacheKey];
+		if ($return = $this->cacheMethod(__FUNCTION__, $cacheKey)) {
+			return $return;
 		}
 		$allFields = empty($fields);
 		if ($allFields) {
@@ -1875,10 +1968,8 @@ class DboSource extends DataSource {
 			$fields = String::tokenize($fields);
 		}
 		$fields = array_values(array_filter($fields));
+		$allFields = $allFields || in_array('*', $fields) || in_array($model->alias . '.*', $fields);
 
-		if (!$quote) {
-			return $fields;
-		}
 		$virtual = array();
 		$virtualFields = $model->getVirtualField();
 		if (!empty($virtualFields)) {
@@ -1894,6 +1985,13 @@ class DboSource extends DataSource {
 				$fields = array_diff($fields, array($field));
 			}
 			$fields = array_values($fields);
+		}
+
+		if (!$quote) {
+			if (!empty($virtual)) {
+				$fields = array_merge($fields, $this->_constructVirtualFields($model, $alias, $virtual));
+			}
+			return $fields;
 		}
 		$count = count($fields);
 
@@ -1928,18 +2026,8 @@ class DboSource extends DataSource {
 						if ($comma === false) {
 							$build = explode('.', $fields[$i]);
 							if (!Set::numeric($build)) {
-								$fields[$i] = $this->name($build[0] . '.' . $build[1]);
+								$fields[$i] = $this->name(implode('.', $build));
 							}
-							$comma = String::tokenize($fields[$i]);
-							foreach ($comma as $string) {
-								if (preg_match('/^[0-9]+\.[0-9]+$/', $string)) {
-									$value[] = $string;
-								} else {
-									$build = explode('.', $string);
-									$value[] = $this->name(trim($build[0]) . '.' . trim($build[1]));
-								}
-							}
-							$fields[$i] = implode(', ', $value);
 						}
 					}
 					$fields[$i] = $prepend . $fields[$i];
@@ -1961,13 +2049,17 @@ class DboSource extends DataSource {
 		if (!empty($virtual)) {
 			$fields = array_merge($fields, $this->_constructVirtualFields($model, $alias, $virtual));
 		}
-		return $this->methodCache[__FUNCTION__][$cacheKey] = array_unique($fields);
+		return $this->cacheMethod(__FUNCTION__, $cacheKey, array_unique($fields));
 	}
 
 /**
  * Creates a WHERE clause by parsing given conditions data.  If an array or string
  * conditions are provided those conditions will be parsed and quoted.  If a boolean
  * is given it will be integer cast as condition.  Null will return 1 = 1.
+ *
+ * Results of this method are stored in a memory cache.  This improves performance, but
+ * because the method uses a simple hashing algorithm it can infrequently have collisions.
+ * Setting DboSource::$cacheMethods to false will disable the memory cache.
  *
  * @param mixed $conditions Array or string of conditions, or any value.
  * @param boolean $quoteValues If true, values should be quoted
@@ -1992,8 +2084,8 @@ class DboSource extends DataSource {
 			$cacheKey = array($conditions, $quoteValues, $where);
 		}
 		$cacheKey = crc32(serialize($cacheKey));
-		if (isset($this->methodCache[__FUNCTION__][$cacheKey])) {
-			return $this->methodCache[__FUNCTION__][$cacheKey];
+		if ($return = $this->cacheMethod(__FUNCTION__, $cacheKey)) {
+			return $return;
 		}
 
 		$clause = $out = '';
@@ -2006,16 +2098,16 @@ class DboSource extends DataSource {
 			$out = $this->conditionKeysToString($conditions, $quoteValues, $model);
 
 			if (empty($out)) {
-				return $this->methodCache[__FUNCTION__][$cacheKey] =  $clause . ' 1 = 1';
+				return $this->cacheMethod(__FUNCTION__, $cacheKey, $clause . ' 1 = 1');
 			}
-			return $this->methodCache[__FUNCTION__][$cacheKey] =  $clause . implode(' AND ', $out);
+			return $this->cacheMethod(__FUNCTION__, $cacheKey, $clause . implode(' AND ', $out));
 		}
 		if ($conditions === false || $conditions === true) {
-			return $this->methodCache[__FUNCTION__][$cacheKey] =  $clause . (int)$conditions . ' = 1';
+			return $this->cacheMethod(__FUNCTION__, $cacheKey,  $clause . (int)$conditions . ' = 1');
 		}
 
 		if (empty($conditions) || trim($conditions) == '') {
-			return $this->methodCache[__FUNCTION__][$cacheKey] =  $clause . '1 = 1';
+			return $this->cacheMethod(__FUNCTION__, $cacheKey, $clause . '1 = 1');
 		}
 		$clauses = '/^WHERE\\x20|^GROUP\\x20BY\\x20|^HAVING\\x20|^ORDER\\x20BY\\x20/i';
 
@@ -2027,7 +2119,7 @@ class DboSource extends DataSource {
 		} else {
 			$conditions = $this->__quoteFields($conditions);
 		}
-		return $this->methodCache[__FUNCTION__][$cacheKey] =  $clause . $conditions;
+		return $this->cacheMethod(__FUNCTION__, $cacheKey, $clause . $conditions);
 	}
 
 /**
@@ -2098,7 +2190,7 @@ class DboSource extends DataSource {
 					}
 				} elseif (is_array($value) && !empty($value) && !$valueInsert) {
 					$keys = array_keys($value);
-					if (array_keys($value) === array_values(array_keys($value))) {
+					if ($keys === array_values($keys)) {
 						$count = count($value);
 						if ($count === 1) {
 							$data = $this->__quoteFields($key) . ' = (';
@@ -2254,7 +2346,7 @@ class DboSource extends DataSource {
 	}
 
 /**
- * Auxiliary function to qoute matches `Model.fields` from a preg_replace_callback call
+ * Auxiliary function to quote matches `Model.fields` from a preg_replace_callback call
  *
  * @param string matched string
  * @return string quoted strig
@@ -2330,24 +2422,27 @@ class DboSource extends DataSource {
 					}
 				}
 				continue;
+			} elseif (is_object($key) && isset($key->type) && $key->type === 'expression') {
+				$result[] = $key->value;
+				continue;
 			}
 
-			if (preg_match('/\\x20ASC|\\x20DESC/i', $key, $_dir)) {
+			if (preg_match('/\\x20(ASC|DESC).*/i', $key, $_dir)) {
 				$dir = $_dir[0];
-				$key = preg_replace('/\\x20ASC|\\x20DESC/i', '', $key);
+				$key = preg_replace('/\\x20(ASC|DESC).*/i', '', $key);
+			}
+
+			$key = trim($key);
+
+			if (is_object($model) && $model->isVirtualField($key)) {
+				$key =  '(' . $this->__quoteFields($model->getVirtualField($key)) . ')';
 			}
 
 			if (strpos($key, '.')) {
 				$key = preg_replace_callback('/([a-zA-Z0-9_]{1,})\\.([a-zA-Z0-9_]{1,})/', array(&$this, '__quoteMatchedField'), $key);
 			}
-
-			$key = trim($key);
-			if (!preg_match('/\s/', $key) && !strpos($key,'.')) {
-				if (is_object($model) && $model->isVirtualField($key)) {
-					$key =  '('.$this->__quoteFields($model->getVirtualField($key)).')';
-				} else {
-					$key = $this->name($key);
-				}
+			if (!preg_match('/\s/', $key) && !strpos($key, '.')) {
+				$key = $this->name($key);
 			}
 			$key .= ' ' . trim($dir);
 			$result[] = $key;
@@ -2828,4 +2923,3 @@ class DboSource extends DataSource {
 		return 'string';
 	}
 }
-?>

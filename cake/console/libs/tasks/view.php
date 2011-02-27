@@ -18,6 +18,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 App::import('Controller', 'Controller', false);
+include_once dirname(__FILE__) . DS . 'bake.php';
 
 /**
  * Task class for creating and updating view files.
@@ -25,15 +26,7 @@ App::import('Controller', 'Controller', false);
  * @package       cake
  * @subpackage    cake.cake.console.libs.tasks
  */
-class ViewTask extends Shell {
-
-/**
- * Name of plugin
- *
- * @var string
- * @access public
- */
-	var $plugin = null;
+class ViewTask extends BakeTask {
 
 /**
  * Tasks to be loaded by this Task
@@ -116,8 +109,8 @@ class ViewTask extends Shell {
 			$this->connection = 'default';
 		}
 		$controller = $action = $alias = null;
-		$this->controllerName = Inflector::camelize($this->args[0]);
-		$this->controllerPath = Inflector::underscore($this->controllerName);
+		$this->controllerName = $this->_controllerName($this->args[0]);
+		$this->controllerPath = $this->_controllerPath($this->controllerName);
 
 		$this->Project->interactive = false;
 		if (strtolower($this->args[0]) == 'all') {
@@ -204,6 +197,7 @@ class ViewTask extends Shell {
 					$actions = $this->_methodsToBake();
 				}
 				$this->bakeActions($actions, $vars);
+				$actions = null;
 			}
 		}
 	}
@@ -217,6 +211,8 @@ class ViewTask extends Shell {
 		$this->hr();
 		$this->out(sprintf("Bake View\nPath: %s", $this->path));
 		$this->hr();
+
+		$this->DbConfig->interactive = $this->Controller->interactive = $this->interactive = true;
 
 		if (empty($this->connection)) {
 			$this->connection = $this->DbConfig->getConfig();
@@ -298,7 +294,7 @@ class ViewTask extends Shell {
 			$primaryKey = $modelObj->primaryKey;
 			$displayField = $modelObj->displayField;
 			$singularVar = Inflector::variable($modelClass);
-			$singularHumanName = $this->_singularHumanName($modelClass);
+			$singularHumanName = $this->_singularHumanName($this->controllerName);
 			$schema = $modelObj->schema(true);
 			$fields = array_keys($schema);
 			$associations = $this->__associations($modelObj);
@@ -370,10 +366,10 @@ class ViewTask extends Shell {
 		if ($content === true) {
 			$content = $this->getContent($action);
 		}
-		$path = $this->path;
-		if (isset($this->plugin)) {
-			$path = $this->_pluginPath($this->plugin) . 'views' . DS;
+		if (empty($content)) {
+			return false;
 		}
+		$path = $this->getPath();
 		$filename = $path . $this->controllerPath . DS . Inflector::underscore($action) . '.ctp';
 		return $this->createFile($filename, $content);
 	}
@@ -493,4 +489,3 @@ class ViewTask extends Shell {
 		return $associations;
 	}
 }
-?>

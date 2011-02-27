@@ -5,34 +5,26 @@
  * PHP versions 4 and 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2009, Cake Software Foundation, Inc.
+ * Copyright 2005-2010, Cake Software Foundation, Inc.
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @package       cake
  * @subpackage    cake.cake.console.libs.tasks
  * @since         CakePHP(tm) v 1.3
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-
+include_once dirname(__FILE__) . DS . 'bake.php';
 /**
  * Task class for creating and updating fixtures files.
  *
  * @package       cake
  * @subpackage    cake.cake.console.libs.tasks
  */
-class FixtureTask extends Shell {
-
-/**
- * Name of plugin
- *
- * @var string
- * @access public
- */
-	var $plugin = null;
+class FixtureTask extends BakeTask {
 
 /**
  * Tasks to be loaded by this Task
@@ -49,14 +41,6 @@ class FixtureTask extends Shell {
  * @access public
  */
 	var $path = null;
-
-/**
- * The db connection being used for baking
- *
- * @var string
- * @access public
- */
-	var $connection = null;
 
 /**
  * Schema instance
@@ -95,7 +79,7 @@ class FixtureTask extends Shell {
 			if (strtolower($this->args[0]) == 'all') {
 				return $this->all();
 			}
-			$model = Inflector::camelize($this->args[0]);
+			$model = $this->_modelName($this->args[0]);
 			$this->bake($model);
 		}
 	}
@@ -122,7 +106,7 @@ class FixtureTask extends Shell {
  * @access private
  */
 	function __interactive() {
-		$this->interactive = true;
+		$this->DbConfig->interactive = $this->Model->interactive = $this->interactive = true;
 		$this->hr();
 		$this->out(sprintf("Bake Fixture\nPath: %s", $this->path));
 		$this->hr();
@@ -177,7 +161,9 @@ class FixtureTask extends Shell {
 		if (!class_exists('CakeSchema')) {
 			App::import('Model', 'CakeSchema', false);
 		}
-		$table = $schema = $records = $import = $modelImport = $recordImport = null;
+		$table = $schema = $records = $import = $modelImport = null;
+		$importBits = array();
+
 		if (!$useTable) {
 			$useTable = Inflector::tableize($model);
 		} elseif ($useTable != Inflector::tableize($model)) {
@@ -186,16 +172,17 @@ class FixtureTask extends Shell {
 
 		if (!empty($importOptions)) {
 			if (isset($importOptions['schema'])) {
-				$modelImport = "'model' => '{$importOptions['schema']}'";
+				$modelImport = true;
+				$importBits[] = "'model' => '{$importOptions['schema']}'";
 			}
 			if (isset($importOptions['records'])) {
-				$recordImport = "'records' => true";
+				$importBits[] = "'records' => true";
 			}
-			if ($modelImport && $recordImport) {
-				$modelImport .= ', ';
+			if ($this->connection != 'default') {
+				$importBits[] .= "'connection' => '{$this->connection}'";
 			}
-			if (!empty($modelImport) || !empty($recordImport)) {
-				$import = sprintf("array(%s%s)", $modelImport, $recordImport);
+			if (!empty($importBits)) {
+				$import = sprintf("array(%s)", implode(', ', $importBits));
 			}
 		}
 
@@ -238,10 +225,7 @@ class FixtureTask extends Shell {
 		$defaults = array('table' => null, 'schema' => null, 'records' => null, 'import' => null, 'fields' => null);
 		$vars = array_merge($defaults, $otherVars);
 
-		$path = $this->path;
-		if (isset($this->plugin)) {
-			$path = $this->_pluginPath($this->plugin) . 'tests' . DS . 'fixtures' . DS;
-		}
+		$path = $this->getPath();
 		$filename = Inflector::underscore($model) . '_fixture.php';
 
 		$this->Template->set('model', $model);
@@ -251,6 +235,19 @@ class FixtureTask extends Shell {
 		$this->out("\nBaking test fixture for $model...");
 		$this->createFile($path . $filename, $content);
 		return $content;
+	}
+
+/**
+ * Get the path to the fixtures.
+ *
+ * @return void
+ */
+	function getPath() {
+		$path = $this->path;
+		if (isset($this->plugin)) {
+			$path = $this->_pluginPath($this->plugin) . 'tests' . DS . 'fixtures' . DS;
+		}
+		return $path;
 	}
 
 /**
@@ -376,7 +373,7 @@ class FixtureTask extends Shell {
 				$condition = $this->in($prompt, null, 'WHERE 1=1 LIMIT 10');
 			}
 		} else {
-			$condition = 'WHERE 1=1 ' . isset($this->params['count']) ? $this->params['count'] : 10;
+			$condition = 'WHERE 1=1 LIMIT ' . (isset($this->params['count']) ? $this->params['count'] : 10);
 		}
 		App::import('Model', 'Model', false);
 		$modelObject =& new Model(array('name' => $modelName, 'table' => $useTable, 'ds' => $this->connection));
@@ -426,4 +423,3 @@ class FixtureTask extends Shell {
 		$this->_stop();
 	}
 }
-?>

@@ -13,12 +13,12 @@
  * PHP versions 4 and 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @package       cake
  * @subpackage    cake.libs.view.helpers
@@ -269,7 +269,7 @@ class MootoolsEngineHelper extends JsBaseEngineHelper {
  *
  * @param array $options Array of options for the sortable.
  * @return string Completed sortable script.
- * @see JsHelper::sortable() for options list.
+ * @see JsBaseEngineHelper::sortable() for options list.
  */
 	function sortable($options = array()) {
 		$options = $this->_processOptions('sortable', $options);
@@ -302,7 +302,7 @@ class MootoolsEngineHelper extends JsBaseEngineHelper {
  *
  * @param array $options Array of options for the droppable.
  * @return string Completed droppable script.
- * @see JsHelper::drop() for options list.
+ * @see JsBaseEngineHelper::drop() for options list.
  */
 	function drop($options = array()) {
 		if (empty($options['drag'])) {
@@ -332,7 +332,7 @@ class MootoolsEngineHelper extends JsBaseEngineHelper {
  *
  * @param array $options Array of options for the slider.
  * @return string Completed slider script.
- * @see JsHelper::slider() for options list.
+ * @see JsBaseEngineHelper::slider() for options list.
  */
 	function slider($options = array()) {
 		$slider = $this->selection;
@@ -357,7 +357,7 @@ class MootoolsEngineHelper extends JsBaseEngineHelper {
  *
  * @param array $options Array of options.
  * @return string Completed serializeForm() snippet
- * @see JsHelper::serializeForm()
+ * @see JsBaseEngineHelper::serializeForm()
  */
 	function serializeForm($options = array()) {
 		$options = array_merge(array('isForm' => false, 'inline' => false), $options);
@@ -372,4 +372,3 @@ class MootoolsEngineHelper extends JsBaseEngineHelper {
 		return $selection . $method;
 	}
 }
-?>

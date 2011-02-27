@@ -11,12 +11,12 @@
  * PHP versions 4 and 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright       Copyright 2006-2009, Cake Software Foundation, Inc.
+ * @copyright       Copyright 2006-2010, Cake Software Foundation, Inc.
  * @link            http://cakephp.org CakePHP Project
  * @package         cake
  * @subpackage      cake.view.helpers
@@ -245,6 +245,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options See JsHelper::request() for options.
  * @return string The completed ajax call.
  * @access public
+ * @see JsBaseEngineHelper::request() for options list.
  */
 	function request($url, $options = array()) {
 		$url = $this->url($url);
@@ -255,10 +256,13 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
 		$options['url'] = $url;
 		if (isset($options['update'])) {
 			$wrapCallbacks = isset($options['wrapCallbacks']) ? $options['wrapCallbacks'] : true;
-			if ($wrapCallbacks) {
-				$success = '$("' . $options['update'] . '").html(data);';
-			} else {
-				$success = 'function (data, textStatus) {$("' . $options['update'] . '").html(data);}';
+			$success = '';
+			if(isset($options['success']) AND !empty($options['success'])) {
+				$success .= $options['success'];
+			}
+			$success .= $this->jQueryObject . '("' . $options['update'] . '").html(data);';
+			if (!$wrapCallbacks) {
+				$success = 'function (data, textStatus) {' . $success . '}';
 			}
 			$options['dataType'] = 'html';
 			$options['success'] = $success;
@@ -271,7 +275,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
 		}
 		$options = $this->_prepareCallbacks('request', $options);
 		$options = $this->_parseOptions($options, $callbacks);
-		return '$.ajax({' . $options .'});';
+		return $this->jQueryObject . '.ajax({' . $options .'});';
 	}
 
 /**
@@ -282,7 +286,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options Array of options for the sortable.
  * @return string Completed sortable script.
  * @access public
- * @see JsHelper::sortable() for options list.
+ * @see JsBaseEngineHelper::sortable() for options list.
  */
 	function sortable($options = array()) {
 		$template = '%s.sortable({%s});';
@@ -297,7 +301,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options Array of options for the draggable element.
  * @return string Completed Draggable script.
  * @access public
- * @see JsHelper::drag() for options list.
+ * @see JsBaseEngineHelper::drag() for options list.
  */
 	function drag($options = array()) {
 		$template = '%s.draggable({%s});';
@@ -312,7 +316,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options Array of options for the droppable element.
  * @return string Completed Droppable script.
  * @access public
- * @see JsHelper::drop() for options list.
+ * @see JsBaseEngineHelper::drop() for options list.
  */
 	function drop($options = array()) {
 		$template = '%s.droppable({%s});';
@@ -327,7 +331,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options Array of options for the droppable element.
  * @return string Completed Slider script.
  * @access public
- * @see JsHelper::slider() for options list.
+ * @see JsBaseEngineHelper::slider() for options list.
  */
 	function slider($options = array()) {
 		$callbacks = array('start', 'change', 'slide', 'stop');
@@ -342,7 +346,7 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
  * @param array $options Options for the serialization
  * @return string completed form serialization script.
  * @access public
- * @see JsHelper::serializeForm() for option list.
+ * @see JsBaseEngineHelper::serializeForm() for option list.
  */
 	function serializeForm($options = array()) {
 		$options = array_merge(array('isForm' => false, 'inline' => false), $options);
@@ -357,4 +361,3 @@ class JqueryEngineHelper extends JsBaseEngineHelper {
 		return $selector . $method;
 	}
 }
-?>

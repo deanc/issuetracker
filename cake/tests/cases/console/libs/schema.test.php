@@ -121,7 +121,9 @@ class SchemaShellTest extends CakeTestCase {
  * @var array
  * @access public
  */
-	var $fixtures = array('core.article', 'core.user', 'core.post', 'core.auth_user', 'core.author', 'core.comment');
+	var $fixtures = array('core.article', 'core.user', 'core.post', 'core.auth_user', 'core.author', 
+		'core.comment', 'core.test_plugin_comment'
+	);
 
 /**
  * startTest method
@@ -366,10 +368,11 @@ class SchemaShellTest extends CakeTestCase {
 		$file =& new File(TMP . 'tests' . DS . 'schema.php');
 		$contents = $file->read();
 
+		$this->assertPattern('/class TestPluginSchema/', $contents);
 		$this->assertPattern('/var \$posts/', $contents);
 		$this->assertPattern('/var \$auth_users/', $contents);
 		$this->assertPattern('/var \$authors/', $contents);
-		$this->assertPattern('/var \$comments/', $contents);
+		$this->assertPattern('/var \$test_plugin_comments/', $contents);
 		$this->assertNoPattern('/var \$users/', $contents);
 		$this->assertNoPattern('/var \$articles/', $contents);
 
@@ -498,4 +501,3 @@ class SchemaShellTest extends CakeTestCase {
 		App::build();
 	}
 }
-?>

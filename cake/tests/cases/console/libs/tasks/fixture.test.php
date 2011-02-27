@@ -5,12 +5,12 @@
  * PHP versions 4 and 5
  *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
- * Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright 2005-2009, Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @copyright     Copyright 2005-2010, Cake Software Foundation, Inc. (http://cakefoundation.org)
  * @link          http://cakephp.org CakePHP(tm) Project
  * @package       cake
  * @subpackage    cake.tests.cases.console.libs.tasks
@@ -136,12 +136,24 @@ class FixtureTaskTest extends CakeTestCase {
 	}
 
 /**
+ * test that connection gets set to the import options when a different connection is used.
+ *
+ * @return void
+ */
+	function testImportOptionsAlternateConnection() {
+		$this->Task->connection = 'test';
+		$result = $this->Task->bake('Article', false, array('schema' => 'Article'));
+		$this->assertPattern("/'connection' => 'test'/", $result);
+	}
+
+/**
  * test generating a fixture with database conditions.
  *
  * @return void
  * @access public
  */
 	function testImportRecordsFromDatabaseWithConditions() {
+		$this->Task->interactive = true;
 		$this->Task->setReturnValueAt(0, 'in', 'WHERE 1=1 LIMIT 10');
 		$this->Task->connection = 'test_suite';
 		$this->Task->path = '/my/path/';
@@ -167,6 +179,37 @@ class FixtureTaskTest extends CakeTestCase {
 		$this->Task->args = array('article');
 		$filename = '/my/path/article_fixture.php';
 		$this->Task->expectAt(0, 'createFile', array($filename, new PatternExpectation('/class ArticleFixture/')));
+		$this->Task->execute();
+	}
+
+/**
+ * test that execute passes runs bake depending with named model.
+ *
+ * @return void
+ * @access public
+ */
+	function testExecuteWithNamedModelVariations() {
+		$this->Task->connection = 'test_suite';
+		$this->Task->path = '/my/path/';
+
+		$this->Task->args = array('article');
+		$filename = '/my/path/article_fixture.php';
+		$this->Task->expectAt(0, 'createFile', array($filename, new PatternExpectation('/class ArticleFixture/')));
+		$this->Task->execute();
+
+		$this->Task->args = array('articles');
+		$filename = '/my/path/article_fixture.php';
+		$this->Task->expectAt(1, 'createFile', array($filename, new PatternExpectation('/class ArticleFixture/')));
+		$this->Task->execute();
+
+		$this->Task->args = array('Articles');
+		$filename = '/my/path/article_fixture.php';
+		$this->Task->expectAt(2, 'createFile', array($filename, new PatternExpectation('/class ArticleFixture/')));
+		$this->Task->execute();
+
+		$this->Task->args = array('Article');
+		$filename = '/my/path/article_fixture.php';
+		$this->Task->expectAt(3, 'createFile', array($filename, new PatternExpectation('/class ArticleFixture/')));
 		$this->Task->execute();
 	}
 
@@ -255,15 +298,24 @@ class FixtureTaskTest extends CakeTestCase {
 		$this->assertPattern('/var \$fields = array\(/', $result);
 
 		$result = $this->Task->bake('Article', 'comments', array('records' => true));
-		$this->assertPattern("/var \\\$import \= array\('records' \=\> true\);/", $result);
+		$this->assertPattern(
+			"/var \\\$import \= array\('records' \=\> true, 'connection' => 'test_suite'\);/",
+			$result
+		);
 		$this->assertNoPattern('/var \$records/', $result);
 
 		$result = $this->Task->bake('Article', 'comments', array('schema' => 'Article'));
-		$this->assertPattern("/var \\\$import \= array\('model' \=\> 'Article'\);/", $result);
+		$this->assertPattern(
+			"/var \\\$import \= array\('model' \=\> 'Article', 'connection' => 'test_suite'\);/",
+			$result
+		);
 		$this->assertNoPattern('/var \$fields/', $result);
 
 		$result = $this->Task->bake('Article', 'comments', array('schema' => 'Article', 'records' => true));
-		$this->assertPattern("/var \\\$import \= array\('model' \=\> 'Article'\, 'records' \=\> true\);/", $result);
+		$this->assertPattern(
+			"/var \\\$import \= array\('model' \=\> 'Article'\, 'records' \=\> true, 'connection' => 'test_suite'\);/",
+			$result
+		);
 		$this->assertNoPattern('/var \$fields/', $result);
 		$this->assertNoPattern('/var \$records/', $result);
 	}
@@ -319,4 +371,3 @@ class FixtureTaskTest extends CakeTestCase {
 		$result = $this->Task->generateFixtureFile('Article', array());
 	}
 }
-?>
