@@ -218,13 +218,13 @@ class IssuesController extends AppController
                 );
             }
 
-		if(isset($this->data['Issue']['priority_id']) AND $this->data['Issue']['priority_id'] > 0)
-		{
-			$this->Issue->id = $id;
-			$this->Issue->save(
-				array('Issue' => array('priority_id' => $this->data['Issue']['priority_id']))
-			);
-		}
+			if(isset($this->data['Issue']['priority_id']) AND $this->data['Issue']['priority_id'] > 0)
+			{
+				$this->Issue->id = $id;
+				$this->Issue->save(
+					array('Issue' => array('priority_id' => $this->data['Issue']['priority_id']))
+				);
+			}
 			
 			// ##### notifications for people active on the issue #####
 			$emails = $this->Issue->getParticipants($id);
@@ -247,13 +247,14 @@ class IssuesController extends AppController
 			}
 			$this->Notifier->send('[New:comment] ' . $issue['Issue']['title'], 'newcomment', array(
 				'username' => $userinfo['User']['username']
+				,'email_content' => strip_tags($this->data['Comment']['content'])
 				,'issueurl' => Configure::read('appurl') . '/issues/view/' . $id
 			));
 			
 			// update comment count
-			$this->Issue->id = $id;
-			$this->Issue->set('comments', $this->Comment->find('count', array('conditions' => "Comment.issue_id = $id")));
-			$this->Issue->save();
+			//$this->Issue->id = $id;
+			//$this->Issue->set('comments', $this->Comment->find('count', array('conditions' => "Comment.issue_id = $id")));
+			//$this->Issue->save();
 			
 			$this->flash('This comment has been posted.', '/issues/view/' . $id);
 		}
