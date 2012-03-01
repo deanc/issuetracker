@@ -79,6 +79,6 @@ foreach($issues as $issue)
 </div>
 <div id="rightcol">
 	<?php echo $this->element('saved_searches', array('searches' => $savedSearches)); ?>
-	<?php echo $this->element('project_stats', array('stats' => $projectStats)); ?>
+	<?php echo $this->element('project_stats', array('stats' => $projectStats, 'projectID' => $project['Project']['project_id'])); ?>
 	<?php echo $this->element('project_users', array('users' => $projectUsers)); ?>
 </div>

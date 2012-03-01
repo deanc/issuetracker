@@ -103,11 +103,16 @@ class ProjectsController extends AppController
 		$this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
 
 		// stats
+		$this->Issue->unbindModel(array(
+			'hasAndBelongsToMany' => array('Tag', 'Users')
+			,'belongsTo' => array('User', 'IssuePriority', 'Project')
+		));
 		$projectStats = $this->Issue->find(
 			'all'
 			, array(
 				'fields' => array('Issue.status_id', 'COUNT(*) as total', 'IssueStatus.status')
 				,'group' => array('Issue.status_id')
+				, 'conditions' => array('Issue.project_id' => $project_id)
 			)
 		);
 		$this->set('projectStats', $projectStats);
