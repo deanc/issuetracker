@@ -46,7 +46,7 @@ class ProjectsController extends AppController
         $ids = array();
         foreach($projects AS $key => $project)
         {
-			$count = $this->Issue->find('count', array('conditions' => array('Issue.project_id' => $project['Project']['project_id'])));
+			$count = $this->Issue->find('count', array('conditions' => array('Issue.project_id' => $project['Project']['project_id'], 'Issue.status_id' => 1)));
 			$projects["$key"]['Project']['total_issues'] = $count;
             if(in_array($project['Project']['project_id'], $ids))
             {
@@ -76,32 +76,41 @@ class ProjectsController extends AppController
 		);
 
 		// look for url params
-	$conditions = array('Issue.project_id' => (int)$project_id);
-	if(isset($_GET['status_id']))
-	{	
-		$status_id = $this->IssueStatus->findBystatus_id(intval($_GET['status_id']));
+		$conditions = array('Issue.project_id' => (int)$project_id);
+		if(isset($_GET['status_id']))
+		{	
+			$status_id = $this->IssueStatus->findBystatus_id(intval($_GET['status_id']));
 
-		if($status_id > 0)
-		{
-			$this->set('status', $status_id['IssueStatus']['status']);
-			$status_id = $status_id['IssueStatus']['status_id'];
-			$this->paginate = array_merge($this->paginate, array('conditions' => array('Issue.status_id' => $status_id, 'Issue.project_id' => (int)$project_id)));
-			$conditions['Issue.status_id'] = $status_id;
-		}
-
-		if(isset($_GET['priority_id']))
-		{
-			$priority = $this->IssuePriority->findBypriority_id(intval($_GET['priority_id']));
-
-			if(!empty($priority))
+			if($status_id > 0)
 			{
-				$conditions['Issue.priority_id'] = $priority['IssuePriority']['priority_id'];
+				$this->set('status', $status_id['IssueStatus']['status']);
+				$status_id = $status_id['IssueStatus']['status_id'];
+				$this->paginate = array_merge($this->paginate, array('conditions' => array('Issue.status_id' => $status_id, 'Issue.project_id' => (int)$project_id)));
+				$conditions['Issue.status_id'] = $status_id;
+			}
+
+			if(isset($_GET['priority_id']))
+			{
+				$priority = $this->IssuePriority->findBypriority_id(intval($_GET['priority_id']));
+
+				if(!empty($priority))
+				{
+					$conditions['Issue.priority_id'] = $priority['IssuePriority']['priority_id'];
+				}
 			}
 		}
-	}
 
-	$this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
+		$this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
 
+		// stats
+		$projectStats = $this->Issue->find(
+			'all'
+			, array(
+				'fields' => array('Issue.status_id', 'COUNT(*) as total', 'IssueStatus.status')
+				,'group' => array('Issue.status_id')
+			)
+		);
+		$this->set('projectStats', $projectStats);
 
     	$issues = $this->paginate('Issue');
     	$this->set(compact('issues'));

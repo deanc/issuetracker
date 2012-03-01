@@ -6,7 +6,7 @@
 foreach($projects AS $project)
 {
 	$new = $this->element('isnew', array('project' => $project['Project']));
-    echo '<li><span style="float: right">(' . $project['Project']['total_issues'] . ')</span> ' . $html->link($project['Project']['name'] . $new, '/projects/' . $project['Project']['project_id'] . '/issues', array('escape' => false)) .  '</li>';
+    echo '<li><span style="float: right">(Open: <span style="color: #458B00; font-weight: bold">' . $project['Project']['total_issues'] . ')</span></span> ' . $html->link($project['Project']['name'] . $new, '/projects/' . $project['Project']['project_id'] . '/issues', array('escape' => false)) .  '</li>';
 }
 ?>
 </ul>

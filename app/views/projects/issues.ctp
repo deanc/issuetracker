@@ -1,7 +1,7 @@
 <div class="clearfix">
 <div id="leftcol">
 
-<h2>Viewing all issues for "<?php echo $project['Project']['name']; ?>" (<?php echo sizeof($issues); ?>)</h2>
+<h2>Viewing all issues for "<?php echo $project['Project']['name']; ?>"</h2>
 
 <?php
 
@@ -79,5 +79,6 @@ foreach($issues as $issue)
 </div>
 <div id="rightcol">
 	<?php echo $this->element('saved_searches', array('searches' => $savedSearches)); ?>
+	<?php echo $this->element('project_stats', array('stats' => $projectStats)); ?>
 	<?php echo $this->element('project_users', array('users' => $projectUsers)); ?>
 </div>

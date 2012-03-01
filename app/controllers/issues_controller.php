@@ -315,6 +315,8 @@ class IssuesController extends AppController
 				);
 			}
 
+			$this->set('totalResults', $this->Issue->find('count', array('conditions' => $conditions)));
+
 		    $this->paginate = array_merge($this->paginate, array('conditions' => $conditions));
 				
 			$this->set('keywords', $this->params['url']['keywords']);	

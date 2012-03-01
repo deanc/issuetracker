@@ -51,6 +51,14 @@ class SearchFilterComponent extends Object
 							$string = str_replace($match, '', $string);
 						}
 					break;
+
+					case 'project':
+						$returnFormat['conditions'][] = array(
+							'Issue.project_id' => (int)$bits[1]
+						);
+						$string = str_replace($match, '', $string);
+
+					break;
 				}
 			}
 			$string = preg_replace('/\s+/i', ' ', $string);

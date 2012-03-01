@@ -1,7 +1,7 @@
 <div class="clearfix">
 <div id="leftcol">
 
-<h2>Searching for "<?php echo htmlspecialchars($keywords); ?>"</h2>
+<h2>Searching for "<?php echo htmlspecialchars($keywords); ?>" (<?php echo $totalResults; ?>)</h2>
 
 <?php
 
